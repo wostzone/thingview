@@ -3,3 +3,5 @@ dist/
 *.ttf
 .quasar
 stats.html
+.history
+node_modules
