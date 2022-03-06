@@ -26,7 +26,7 @@ const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 
 
 let data = reactive({
-  editRecord: props.account ? {...props.account} : new AccountRecord(),
+  editRecord: props.account ? {...props.account} : accountStore.NewAccountRecord(),
   password: "",
 })
 

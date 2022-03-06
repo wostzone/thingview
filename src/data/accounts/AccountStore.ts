@@ -42,11 +42,9 @@ export class AccountStore {
   storageKey: string = "accountStore"
 
   constructor() {
-    let defaultAccount = new AccountRecord()
+    let defaultAccount = this.NewAccountRecord()
     defaultAccount.name = "Hub server"
-    defaultAccount.address = location.hostname
     defaultAccount.loginName = "user1" // for testing
-    defaultAccount.enabled = true
     this.data = reactive(new AccountsData())
   }
 
@@ -101,6 +99,18 @@ export class AccountStore {
       let defaultAccount = new AccountRecord()
       this.data.accounts.push(defaultAccount)
     }
+  }
+
+  // create a new account record instance
+  // This only creates the instance for editing and does not add the record
+  NewAccountRecord(): AccountRecord {
+    let ar = new AccountRecord()
+    ar.name = "New account"
+    ar.authPort = ar.directoryPort = ar.mqttPort = parseInt(location.port)
+    ar.address = location.hostname
+    ar.enabled = true
+
+    return ar
   }
 
   // remove the given account by id
