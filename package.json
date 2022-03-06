@@ -7,8 +7,8 @@
     "build": "vue-tsc --noEmit --skipLibCheck && vite build && cp src/server/server.js dist/",
     "serve": "vite preview",
     "clean": "rm node_modules/.vite/*",
-    "//distbin": "For distribution as a self-contained binary",
-    "distbin": "pkg -c src/server/config.json dist/server.js -o dist/thingview",
+    "//dist": "For distribution as a self-contained binary",
+    "dist": "pkg -c src/server/config.json dist/server.js -o dist/thingview",
     "//install": "Usually wosthub runs as a local user",
     "install": "cp dist/thingview ~/bin/wosthub/bin"
   },
