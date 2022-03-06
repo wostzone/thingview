@@ -109,6 +109,7 @@ export default class DirectoryClient {
     //     ca: this.caCert,
     //     body: jsonPayload,
     // }
+    console.log("DirectoryClient.ListTDs: from '%s'", url)
 
     const promise: Promise<Array<ThingTD>> = fetch(url, {
       method: 'GET',
@@ -139,7 +140,7 @@ export default class DirectoryClient {
 
     // TODO: repeat until all things are collected
     return this.ListTDs(0, 0).then((things: ThingTD[]) => {
-      console.log("Received directory update containing '%s' items", things.length)
+      console.log("DirectoryClient.LoadDirectory: Received directory update containing '%s' items", things.length)
       for (let td of things) {
         let parts = ThingTD.GetThingIDParts(td.id)
         td.zone = parts.zone

@@ -78,6 +78,12 @@ export default class MqttClient {
 
     /**
      * Connect to the MQTT broker
+     * 
+     * NOTE: IF CONNECT FAILS IN FIREFOX on Ubuntu v21.10 (March 1, 2022) it is because Mosquitto needs 
+     * to use libwebsockets 4.2.1 and Ubuntu v21.10 comes with libwebsockets-4.0.20 which fails connecting using http/2.
+     * Note that Ubuntu 20.04.03 LTS does come with the right libwebsockets18. (4.2.1)
+     * See also: https://github.com/eclipse/paho.mqtt.javascript/issues/231
+     * and https://github.com/eclipse/mosquitto/issues/1211
      */
     async Connect(loginID: string, accessToken: string) {
         if (this.isConnected) {
@@ -98,12 +104,24 @@ export default class MqttClient {
         // WebSockets use a different port. FIXME. let server handle connections
         // this.pahoClient = new Paho.Client(this.accountInfo.host, port, "", clientId)
 
-        let url = 'wss://' + this.address+":"+this.port.toString()
+      let url = 'wss://' + this.address + ":" + this.port.toString() + "/mqtt"
+      let now = new Date()
+      let clientID = loginID + "-" + now.toISOString()
+      // let options: MQTT.IClientOptions = {
+      //   reconnectPeriod: 5000,
+      //   username: loginID,
+      //   password: accessToken,
+      //   clientId: clientID,
+      // }
       let options: MQTT.IClientOptions = {
-            reconnectPeriod: 3000,
-            username: loginID,
-            password: accessToken,
-        }
+        reconnectPeriod: 5000,
+        username: loginID,
+        password: accessToken,
+        clientId: clientID,
+      }
+
+
+      console.log("Connecting to MQTT broker at '%s' as user %s", url, loginID)
       this.mqttJS = MQTT.connect(url, options);
 
       if (!this.mqttJS) {

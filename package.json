@@ -1,17 +1,32 @@
 {
   "name": "thingview",
-  "version": "0.3-alpha",
+  "version": "0.4-alpha",
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit --skipLibCheck && vite build",
+    "build": "vue-tsc --noEmit --skipLibCheck && vite build && cp src/server/server.js dist/",
     "serve": "vite preview",
-    "clean": "rm node_modules/.vite/*"
+    "clean": "rm node_modules/.vite/*",
+    "//distbin": "For distribution as a self-contained binary",
+    "distbin": "pkg -c src/server/config.json dist/server.js -o dist/thingview",
+    "//install": "Usually wosthub runs as a local user",
+    "install": "cp dist/thingview ~/bin/wosthub/bin"
+  },
+  "bin": "src/server/server.js",
+  "pkg": {
+    "assets": [
+      "dist/**/*"
+    ],
+    "targets": [
+      "linux"
+    ],
+    "outputPath": "dist"
   },
   "dependencies": {
     "@quasar/extras": "^1.12.1",
     "@types/lodash-es": "^4.17.5",
     "@vueuse/core": "^7.4.0",
+    "http-proxy-middleware": "^2.0.3",
     "jwt-decode": "^3.1.2",
     "lodash-es": "^4.17.21",
     "mqtt": "^4.2.8",
@@ -26,6 +41,8 @@
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@types/node": "^16.11.10",
     "@vitejs/plugin-vue": "^1.10.1",
+    "express": "^4.17.3",
+    "pkg": "^5.5.2",
     "rollup-plugin-visualizer": "^5.5.2",
     "typescript": "^4.4.3",
     "unplugin-vue-components": "^0.17.2",

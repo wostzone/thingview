@@ -70,7 +70,7 @@ export class ConnectionManager {
   /**
    * Authenticate the account with the authentication service and obtain an access token
    * Obtain new authentication tokens for the account using the given password
-   *
+   * 
    * @param account is the account to authenticate
    * @password to authenticate with
    * This returns a promise
@@ -80,7 +80,8 @@ export class ConnectionManager {
     if (!ac.authClient) {
       ac.authClient = new AuthClient(account.id, account.address, account.authPort)
     }
-    console.log("ConnectionManager.Authenticate: Authenticate as", account.loginName, "to", account.address,)
+    console.log("ConnectionManager.Authenticate: Authenticate as '%s' to '%s:%s'",
+      account.loginName, account.address, account.authPort)
 
     // AuthClient holds the tokens
     return ac.authClient.AuthenticateWithLoginID(account.loginName, password, account.rememberMe)
@@ -115,10 +116,10 @@ export class ConnectionManager {
    */
   async AuthenticationRefresh(account: AccountRecord) {
     let ac = this.GetAccountConnection(account)
-    if (!ac.authClient) {
+    // if (!ac.authClient) {
       ac.authClient = new AuthClient(account.id, account.address, account.authPort)
-    }
-    console.log("ConnectionManager.AuthenticationRefresh: Refresh authentication with", account.address)
+    // }
+    console.log("ConnectionManager.AuthenticationRefresh: Refresh authentication with %s:%s", account.address, account.authPort)
     this.connections.set(ac.accountID, ac)
 
     return ac.authClient.Refresh()
@@ -161,7 +162,7 @@ export class ConnectionManager {
       // setup a new account connection or re-use existing one
       let ac = this.GetAccountConnection(account)
 
-      console.log("ConnectionManager.Connect/1: address: ", account.address, "as", account.loginName)
+      console.log("ConnectionManager.Connect/1: Connect to address '%s' as '%s'", account.address, account.loginName)
 
       // if already connected then update status and continue
       if (ac.authClient.Expiry() > 1) {
@@ -222,8 +223,6 @@ export class ConnectionManager {
   protected GetAccountConnection(account: AccountRecord): AccountConnection {
     let connection = this.connections.get(account.id)
     if (!connection) {
-      console.log("ConnectionManager.Connect/1: address: ", account.address, "as", account.loginName)
-
       connection = {
         name: account.name,
         accountID: account.id,

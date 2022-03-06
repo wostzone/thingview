@@ -71,6 +71,7 @@ export default class AuthClient {
   private async httpsPost(path: string, jsonPayload: string): Promise<Response> {
 
     let url = "https://" + this.address + ":" + this.port.toString() + path
+    console.log("httpsPost: %s", url)
     const response: Promise<Response> = fetch(url, {
       method: 'POST',
       body: jsonPayload,
@@ -113,12 +114,14 @@ export default class AuthClient {
   // credentials are invalid or the auth service cannot be reached.
   public async AuthenticateWithLoginID(loginID: string, password: string, rememberMe: boolean): Promise<string> {
     this.loginID = loginID
+    // directly login to the auth service. This is an issue with cross-scripting attacks 
+    // let url = "https://" + this.address + ":" + this.port.toString() + DefaultJWTLoginPath
+
     let url = "https://" + this.address + ":" + this.port.toString() + DefaultJWTLoginPath
 
     let loginMessage: LoginRequestMessage = {
       login: loginID,
       password: password,
-          // FIXME: use the rememberMe parameter after this works
       rememberMe: rememberMe
     } // rememberMe }
     let payload = JSON.stringify(loginMessage)

@@ -1,0 +1,20 @@
+{
+  "name": "thingview",
+  "version": "0.4-alpha",
+  "private": true,
+  "bin": "dist/server.js",
+  "pkg": {
+    "assets": [
+      "../../dist/index.html",
+      "../../dist/favicon.ico",
+      "../../dist/assets/**/*"
+    ],
+    "targets": [
+      "linux"
+    ]
+  },
+  "dependencies": {
+    "http-proxy-middleware": "^2.0.3"
+  },
+  "readme": "first run yarn build, followed by pkg -c src/server/config.json dist/server.js"
+}

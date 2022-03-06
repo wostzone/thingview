@@ -16,14 +16,14 @@ export class AccountRecord extends Object {
   // Hub hostname or IP address (must match its server certificate name)
   address: string = "localhost";
 
-  // port of authentication service
-  authPort?: number = 8881;
+  // port of authentication service, typically 8881. 0 to use the express server proxy instead.
+  authPort?: number = 0; // 8881;
 
-  // port of mqtt service. 8884 for certificate auth, 8885 for websocket 
-  mqttPort?: number = 8885;
+  // port of mqtt service. typically 8885 for websocket. 0 to use the express server proxy instead.
+  mqttPort?: number = 0; // 8885;
 
-  // port of the directory service
-  directoryPort?: number = 8886;
+  // port of the directory service. typically 8886. 0 to use the express server proxy instead
+  directoryPort?: number = 0; // 8886;
 
   // when enabled, attempt to connect
   enabled: boolean = false;
