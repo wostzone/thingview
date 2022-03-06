@@ -51,55 +51,7 @@ const connectToHub = (accounts: ReadonlyArray<AccountRecord>) => {
     }
   })
 }
-      // cm.AuthenticationRefresh(account)
-      //   .then( ()=>{
-      //     cm.Connect(account, handleUpdate)
-      //     console.log("AppView.connectToHub: Connection to %s successful: ", account.name)
-      //     $q.notify({
-      //       position: 'top',
-      //       type: 'positive',
-      //       message: 'Connected to '+account.name,
-      //     })
-      //   })
-      //   .catch((reason:any)=>{
-      //     console.log("AppView.connectToHub: Connection to %s at %s failed: ", account.name, account.address, reason)
-      //     $q.notify({
-      //       position: 'top',
-      //       type: 'negative',
-      //       message: 'Connection to '+account.name+' at '+account.address+' failed: '+reason,
-      //     })
-      //     // popup login page
-      //     let newPath = "/accounts/"+account.id
-      //     console.log("AppView.connectToHub: Navigating to account edit for account '%s': path=%s", account.name, newPath)
-      //     // router.push(newPath)
-      //     router.push({name: "accounts.dialog", params: { accountID: account.id}})
-      //   })
-        // cm.Connect(account, handleUpdate)
-        //   .then(()=>{
-        //     console.log("AppView.connectToHub: Connection to %s successful: ", account.name)
-        //     $q.notify({
-        //       position: 'top',
-        //       type: 'positive',
-        //       message: 'Connected to '+account.name,
-        //     })
-        //   })
-        //   .then()
-        //   .catch((reason:any)=>{
-        //     console.log("AppView.connectToHub: Connection to %s at %s failed: ", account.name, account.address, reason)
-        //     $q.notify({
-        //       position: 'top',
-        //       type: 'negative',
-        //       message: 'Connection to '+account.name+' at '+account.address+' failed: '+reason,
-        //     })
-        //     // popup login page
-        //     let newPath = "/accounts/"+account.id
-        //     console.log("AppView.connectToHub: Navigating to account edit for account '%s': path=%s", account.name, newPath)
-        //     // router.push(newPath)
-        //     router.push({name: "accounts.dialog", params: { accountID: account.id}})
-        //   })
-  //     }
-  // })
-// }
+
 
 onMounted(()=>{
   appState.Load()

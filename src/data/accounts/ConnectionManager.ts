@@ -162,32 +162,43 @@ export class ConnectionManager {
       // setup a new account connection or re-use existing one
       let ac = this.GetAccountConnection(account)
 
-      console.log("ConnectionManager.Connect/1: Connect to address '%s' as '%s'", account.address, account.loginName)
-
       // if already connected then update status and continue
       if (ac.authClient.Expiry() > 1) {
-        console.log("ConnectionManager.Connect/2a: Previous auth still valid for %s seconds ", ac.authClient.Expiry())
+        console.log("ConnectionManager.Connect-1: Previous auth still valid for %s seconds ", ac.authClient.Expiry())
       } else {
         // Try refresh if no valid access token exists
-        console.log("ConnectionManager.Connect/2b: Refreshing auth")
+        console.log("ConnectionManager.Connect-1: Refreshing auth")
         // this throws when auth fails
         await this.AuthenticationRefresh(account)
       }
 
-      ac.state.authenticated = true
-      ac.state.statusMessage = "Authentication is valid"
-      this.status.authenticated = true
-      console.log("ConnectionManager.Connect/3: Connecting to mqtt and directory")
-
       if (ac.authClient.accessToken) {
-        // Mqtt login accepts a valid access token
-        if (ac.mqttClient && ac.authClient) {
-          ac.mqttClient.Connect(account.loginName, ac.authClient.accessToken)
-        }
+        ac.state.authenticated = true
+        ac.state.statusMessage = "Authentication is valid"
+        this.status.authenticated = true
+
         // if a directory client exists, get the directory
         if (ac.dirClient) {
-          ac.dirClient.Connect(ac.authClient.accessToken)
+          console.log("ConnectionManager.Connect-2: Query Thing Directory")
+          await ac.dirClient.Connect(ac.authClient.accessToken)
+            .then(() => {
+              ac.state.directory = true
+            }).catch((err) => {
+              ac.state.statusMessage += "\nFailed reading Thing Directory: " + err
+            })
         }
+        // Mqtt login accepts a valid access token
+        if (ac.mqttClient && ac.authClient) {
+          console.log("ConnectionManager.Connect-3: Connecting to mqtt broker")
+          await ac.mqttClient.Connect(account.loginName, ac.authClient.accessToken)
+            .then(() => {
+              ac.state.messaging = true
+            })
+        }
+      } else {
+        ac.state.authenticated = false
+        ac.state.statusMessage = "Authentication failed"
+        this.status.authenticated = false
       }
       if (onConnectChanged) {
         onConnectChanged(account, ac.state)
@@ -312,9 +323,11 @@ export class ConnectionManager {
         newMessage = "The user is authenticated"
         if (directory) {
           newMessage += ", the directory of Things is retrieved"
+        } else {
+          newMessage += ", directory of Things was NOT retrieved"
         }
         if (messaging) {
-          newMessage += " and message bus connection is established"
+          newMessage += ", and message bus connection is established"
         }
         if (!directory && !messaging) {
           newMessage = "Authenticated but not connected"
