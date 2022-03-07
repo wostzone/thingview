@@ -77,9 +77,8 @@ export class ConnectionManager {
    */
   async Authenticate(account: AccountRecord, password: string) {
     let ac = this.GetAccountConnection(account)
-    if (!ac.authClient) {
-      ac.authClient = new AuthClient(account.id, account.address, account.authPort)
-    }
+    ac.authClient = new AuthClient(account.id, account.address, account.authPort)
+
     console.log("ConnectionManager.Authenticate: Authenticate as '%s' to '%s:%s'",
       account.loginName, account.address, account.authPort)
 
@@ -116,9 +115,7 @@ export class ConnectionManager {
    */
   async AuthenticationRefresh(account: AccountRecord) {
     let ac = this.GetAccountConnection(account)
-    // if (!ac.authClient) {
-      ac.authClient = new AuthClient(account.id, account.address, account.authPort)
-    // }
+    ac.authClient = new AuthClient(account.id, account.address, account.authPort)
     console.log("ConnectionManager.AuthenticationRefresh: Refresh authentication with %s:%s", account.address, account.authPort)
     this.connections.set(ac.accountID, ac)
 
@@ -163,14 +160,15 @@ export class ConnectionManager {
       let ac = this.GetAccountConnection(account)
 
       // if already connected then update status and continue
-      if (ac.authClient.Expiry() > 1) {
-        console.log("ConnectionManager.Connect-1: Previous auth still valid for %s seconds ", ac.authClient.Expiry())
-      } else {
-        // Try refresh if no valid access token exists
+      // if (ac.authClient.Expiry() > 3) {
+      //   console.log("ConnectionManager.Connect-1: Previous auth still valid for %s seconds ", ac.authClient.Expiry())
+      // } else {
+        // Always refresh the access token on reconnect
+        // This is a workaround as hitting F5 again when the token is still valid caused the refresh token to disappear for unknown reason
         console.log("ConnectionManager.Connect-1: Refreshing auth")
         // this throws when auth fails
         await this.AuthenticationRefresh(account)
-      }
+      // }
 
       if (ac.authClient.accessToken) {
         ac.state.authenticated = true
