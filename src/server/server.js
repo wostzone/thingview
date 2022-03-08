@@ -12,7 +12,7 @@ const fs = require('fs')
 const https = require('https')
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
-const port = 8443
+const port = 8443    
 const privateKey = fs.readFileSync('./certs/serverKey.pem')
 const certificate = fs.readFileSync('./certs/serverCert.pem')
 var credentials = {key: privateKey, cert:certificate}

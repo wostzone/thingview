@@ -1,5 +1,5 @@
 Arguments: 
-  /snap/node/5953/bin/node /home/henk/.yarn/bin/yarn.js build
+  /snap/node/5953/bin/node /home/henk/.yarn/bin/yarn.js add node-express
 
 PATH: 
   /home/henk/.yarn/bin:/home/henk/.config/yarn/global/node_modules/.bin:/home/henk/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/bin:/bin:/sbin:/usr/sbin:/home/henk/bin:/home/henk/bin/adt/sdk/platform-tools:/home/henk/bin/adt/sdk/tools:/home/henk/bin/adt/sdk/tools/bin:/home/henk/bin/build-tools:/bin:/home/henk/.local/bin:/usr/games
@@ -14,12 +14,17 @@ Platform:
   linux x64
 
 Trace: 
-  SyntaxError: /home/henk/projects/wostzone/thingview/package.json: Unexpected token / in JSON at position 89
-      at JSON.parse (<anonymous>)
-      at /home/henk/.yarn/lib/cli.js:1625:59
-      at Generator.next (<anonymous>)
-      at step (/home/henk/.yarn/lib/cli.js:310:30)
-      at /home/henk/.yarn/lib/cli.js:321:13
+  Error: https://registry.yarnpkg.com/node-express: Not found
+      at Request.params.callback [as _callback] (/home/henk/.yarn/lib/cli.js:67031:18)
+      at Request.self.callback (/home/henk/.yarn/lib/cli.js:140885:22)
+      at Request.emit (node:events:520:28)
+      at Request.<anonymous> (/home/henk/.yarn/lib/cli.js:141857:10)
+      at Request.emit (node:events:520:28)
+      at IncomingMessage.<anonymous> (/home/henk/.yarn/lib/cli.js:141779:12)
+      at Object.onceWrapper (node:events:639:28)
+      at IncomingMessage.emit (node:events:532:35)
+      at endReadableNT (node:internal/streams/readable:1346:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
 
 npm manifest: 
   {
@@ -27,16 +32,13 @@ npm manifest:
     "version": "0.4-alpha",
     "private": true,
     "scripts": {
-      // run dev server
       "dev": "vite",
-      // build spa using vite
       "build": "vue-tsc --noEmit --skipLibCheck && vite build && cp src/server/server.js dist/",
-      // preview app
       "serve": "vite preview",
       "clean": "rm node_modules/.vite/*",
-      // create a binary 'thingview' from the build
-      "distbin": "pkg -c src/server/config.json dist/server.js -o dist/thingview",
-      // install the binary into a local wosthub folder
+      "//dist": "For distribution as a self-contained binary",
+      "dist": "pkg -c src/server/config.json dist/server.js -o dist/thingview",
+      "//install": "Usually wosthub runs as a local user",
       "install": "cp dist/thingview ~/bin/wosthub/bin"
     },
     "bin": "src/server/server.js",
