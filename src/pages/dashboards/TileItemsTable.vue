@@ -116,58 +116,67 @@ const getThingPropValue = (thingItem:IThingTileItem):string => {
 }
 
 /**
- * Return the tile item name including a tooltip.
+ * Return the tile item label with edit button to customize the label
  * The property name is the customized property label or its TD name - property name 
  *  
  * This uses the thing's name or description if name is not configured
  * A tooltip shows more info.
  * Property name edit button is shown in edit mode and triggers a name edit dialog.
  */
-const getTileItemName = (thingItem:IThingTileItem):VNode => {
+const getTileItemLabel = (thingItem:IThingTileItem):VNode => {
   // 1: The item defined label takes precedence
   let propName = thingItem.tileItem.label
   let tdProp = thingItem.tdProp
+  let defaultLabel = ""
 
-  if (!propName) {
-    if (tdProp) {
-      propName = tdProp.title
-    }
-    // prefix with thing name if it is in the thing's property list
-    let tdProps = thingItem.td?.properties
-    // let thingNameProp = _get(tdProps, PropNameName)
-    let thingNameProp = _get(tdProps, 'Name')
-    if (thingNameProp) {
-      propName = thingNameProp.value + " " + propName
+  if (thingItem.td && tdProp) {
+    defaultLabel = tdProp.title
+    
+    // prefix default label with the thing's name if available
+    // let pn = ThingTD.GetThingProperty(thingItem.td, PropNameName)
+    let pn = ThingTD.GetThingProperty(thingItem.td, 'Name')
+    if (pn) {
+      defaultLabel = pn.value + " " + defaultLabel
     }
   }
+  if (propName == "") {
+    propName = defaultLabel
+  }
+
+  // note: the following tooltip construct is horrid. Is there a more readable way?
+  let comp = h('span', 
+              {style: 'width:"100%"; display:flex'},
+              [ propName,
+                props.editMode ? 
+                h(TButton, {
+                  icon:matEdit, round:true, dense:true, flat:true, height:'10px', 
+                  style: "min-width: 1.5em; position: absolute; right:0",
+                  tooltip:"Edit name",
+                  onClick: ()=>handleEditLabel(thingItem.tileItem, defaultLabel)
+                }):null,
+              ]
+  )
+
+  return comp
+}
+
+/**
+ * Return a tooltip of the tile item that includes more information
+ *  
+ */
+const getTileItemTooltip = (thingItem:IThingTileItem):VNode => {
+  // 1: The item defined label takes precedence
   // tooltip text is the Thing's description - property ID
   let tooltip1 = thingItem.td?.description + "; " + thingItem.tileItem.propertyID
   tooltip1 += " (" + thingItem.td?.deviceType + ")"
   let tooltip2 = "Thing ID: " + thingItem.td?.id
 
   // note: the following tooltip construct is horrid. Is there a more readable way?
-  let comp = h('span', 
-              {style: 'color: green; width:"100%"; display:flex'},
-              [ propName,
-                h(QTooltip, {
-                    style: 'font-size:inherit',
-                  }, ()=>[h('p',tooltip1), h('p',tooltip2)]
-                ),
-                // edit button to edit property display name
-                props.editMode ? 
-                h(TButton, {
-                  icon:matEdit, round:true, dense:true, flat:true, height:'10px', 
-                  style: "min-width: 1.5em; position: absolute; right:0",
-                  tooltip:"Edit name",
-                  onClick: ()=>handleEditLabel(thingItem),
-                }):null,
-              ]
+  let comp = h(QTooltip, 
+              { style: 'font-size:inherit' },
+              ()=>[h('p',tooltip1), h('p',tooltip2)]
   )
-  // let comp = h(TText, 
-  //              { tooltip: h('p',tooltip1), 
-  //             },
-  //             <div>propName</div>, 
-  // )
+  
   return comp
 }
 
@@ -182,9 +191,10 @@ const handleRemove = (row:IThingTileItem) => {
 /**
  * Edit the tile property display name
  */
-const handleEditLabel = (thingItem:IThingTileItem) => {
-  console.log("TileItemsTable.handleEditName: item=", thingItem.key)
-  emits("onEditTileItem", thingItem.tileItem)
+const handleEditLabel = (tileItem:IDashboardTileItem, defaultLabel: string) => {
+  console.log("TileItemsTable.handleEditName: item=", defaultLabel)
+
+  emits("onEditTileItem", tileItem, defaultLabel)
 }
 
 /**
@@ -213,8 +223,8 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
       width: "60%",
       component: (row:IThingTileItem)=>h('span',
          {'style': 'width:"100%"'},
-         [getTileItemName(row),
-         
+         [getTileItemLabel(row),
+         getTileItemTooltip(row)
           ]
       ),
       align: 'left'

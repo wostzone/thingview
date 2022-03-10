@@ -6,13 +6,11 @@
  */
 
 import {ref, reactive} from "vue";
-import {useDialogPluginComponent, useQuasar, QForm, QInput} from "quasar";
+import {useDialogPluginComponent, QForm, QInput} from "quasar";
 
 import TDialog from "@/components/TDialog.vue";
-import TButton from "@/components/TButton.vue";
 import { IDashboardTileItem } from "@/data/dashboard/DashboardStore";
-
-const $q = useQuasar()
+import { TDProperty } from "@/data/td/ThingTD";
 
 // inject dialog handlers
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
@@ -20,6 +18,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 // 
 const props = defineProps<{
   tileItem: IDashboardTileItem
+  defaultLabel: string
 }>()
 
 
@@ -69,10 +68,10 @@ const handleSubmit = () =>{
            ref="formRef"
            >
       <QInput v-model="editItem.label"
-              required autofocus
+              autofocus
+              :placeholder="defaultLabel"
               id="NewLabel" type="text"
               label="New Label"
-              :rules="[()=>editItem.label !== ''||'Please provide a label']"
               stack-label
       />
 

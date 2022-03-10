@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+// TTable wrapper around QTable
+// This defines a common presentation of the table throughout the app
 
 import {QTable} from "quasar";
 import {ref} from "vue";
@@ -61,7 +63,7 @@ const pagination = ref({
   >
    <!-- export the slots -->
     <!-- <template v-for="(index, name:string|number) in $slots" v-slot:[name]="props"> -->
-    <template v-for="(index, name) in $slots" v-slot:slotname="props">
+    <template v-for="(index, name) in $slots" v-slot:[name]="props">
       <!-- pass all props to the named slot -->
       <slot :name="name" v-bind="props" > </slot>
     </template>

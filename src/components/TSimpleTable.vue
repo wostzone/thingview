@@ -1,5 +1,9 @@
 <script lang="ts" setup>
 
+// TSimpleTable wrapper around QMarkupTable. 
+// Intended as a simpler alternative to QTable that allows custom fields
+// definition in the columns, instead of using slots.
+
 import {h, VNode } from 'vue';
 import {get as _get} from 'lodash-es'
 import {QMarkupTable, QTooltip} from "quasar";

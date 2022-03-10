@@ -63,12 +63,13 @@ const handleAddThingProperty = () => {
 }
 
 // Popup a dialog for editing the selected tile item label
-const handleEditTileItemLabel = (tileItem:IDashboardTileItem) => {
+const handleEditTileItemLabel = (tileItem:IDashboardTileItem, defaultLabel:string) => {
   console.info("EditTileDialog.handleEditTileItemLabel")
   $q.dialog({
      component: EditTileItemLabel,
      componentProps: {
       //  tile: editTile,
+       defaultLabel: defaultLabel,
        tileItem: tileItem,
       },
   }).onOk( (props)=>{
