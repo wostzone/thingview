@@ -21,6 +21,11 @@ const props = defineProps<{
    */
   dashStore: DashboardStore
 
+  /**
+   * editMode to show menu button
+   */
+  editMode: boolean
+
 /**
    * Things data storage
    */
@@ -136,7 +141,8 @@ const handleMenuAction = (menuItem:IMenuItem) => {
         <!-- The menu is not a draggable area in the dashboard grid 
            'no-drag-area' is defined in the DashboardView
         -->
-        <TMenuButton flat dense  class="toolbar-header no-drag-area"
+        <TMenuButton v-if="props.editMode"
+          flat dense  class="no-drag-area"
             :icon="matMenu" 
             :items="menuItems"
             @on-menu-action="handleMenuAction"
@@ -146,7 +152,11 @@ const handleMenuAction = (menuItem:IMenuItem) => {
       <!--       Slot for the widget content-->
       <!--       To keep vertical scrolling within the slot, use flex column with overflow-->
       <QCardSection class="tile-content-section">
-        <CardWidget :tile="props.tile" :thingStore="props.thingStore"/>
+        <CardWidget 
+          :tile="props.tile" 
+          :thingStore="props.thingStore"
+          :editMode="props.editMode"
+        />
       </QCardSection>
 
     </span>

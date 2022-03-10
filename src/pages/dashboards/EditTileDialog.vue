@@ -1,5 +1,10 @@
 <script lang="ts" setup>
-import {ref, reactive, nextTick} from "vue";
+
+/** Edit Tile Dialog
+ * Edit the tile name, type and select thing properties to display
+ */
+
+import {ref, reactive} from "vue";
 import {cloneDeep as _cloneDeep, remove as _remove} from 'lodash-es'
 import {useDialogPluginComponent, useQuasar, QForm, QInput, QSelect} from "quasar";
 import {matAdd} from "@quasar/extras/material-icons";
@@ -7,14 +12,15 @@ import {matAdd} from "@quasar/extras/material-icons";
 import TDialog from "@/components/TDialog.vue";
 import TButton from "@/components/TButton.vue";
 
-const $q = useQuasar()
-
 import { DashboardTileConfig, IDashboardTileItem, TileTypeCard, TileTypeImage } from "@/data/dashboard/DashboardStore";
 import thingStore from '@/data/td/ThingStore'
 import SelectThingPropertyDialog from "./SelectThingPropertyDialog.vue";
 import TileItemsTable from "./TileItemsTable.vue";
+import EditTileItemLabel from "./EditTileItemLabel.vue";
 
-// inject handlers
+const $q = useQuasar()
+
+// inject dialog handlers
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
 const props = defineProps<{
@@ -56,6 +62,24 @@ const handleAddThingProperty = () => {
     })
 }
 
+// Popup a dialog for editing the selected tile item label
+const handleEditTileItemLabel = (tileItem:IDashboardTileItem) => {
+  console.info("EditTileDialog.handleEditTileItemLabel")
+  $q.dialog({
+     component: EditTileItemLabel,
+     componentProps: {
+      //  tile: editTile,
+       tileItem: tileItem,
+      },
+  }).onOk( (props)=>{
+    // let tileItem:IDashboardTileItem = props.tileItem
+    let newLabel:string = props.newLabel
+    // Add a new view property to the tile
+    console.log("EditTileDialog.handleEditTileItemLabel: props:", props)
+    tileItem.label = newLabel
+  })
+}
+
 // Remove the tile item from the list of items
 const handleRemoveTileItem = (tileItem:IDashboardTileItem) => {
   console.info("EditTileDialog.handleRemoveTileItem. item=",tileItem)
@@ -69,7 +93,7 @@ const handleSubmit = () =>{
   formRef.value.validate(true)
       .then((isValid:boolean)=>{
         if (isValid) {
-          console.info("EditTileDialog.handleSubmit tile is valid")
+          console.info("EditTileDialog.handleSubmit tile is valid: ", editTile)
           onDialogOK(editTile)
         } else {
           console.info("EditTileDialog.handleSubmit tile is not valid")
@@ -125,7 +149,8 @@ const handleSubmit = () =>{
         :thingStore="thingStore"
         dense flat
         edit-mode
-        @on-remove-tile-item="handleRemoveTileItem"  
+        @onRemoveTileItem="handleRemoveTileItem"  
+        @onEditTileItem="handleEditTileItemLabel"
         />
       <div v-else>Missing dashboard tile items</div>
     </QForm>

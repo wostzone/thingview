@@ -1,22 +1,26 @@
 <script lang="ts" setup>
 
 import {h, VNode, VNodeArrayChildren} from 'vue'
+import { get as _get} from 'lodash-es'
+import { matRemove, matEdit } from '@quasar/extras/material-icons';
+import { QTooltip } from 'quasar';
 
 import TButton from '@/components/TButton.vue'
+import TSimpleTable from '../../components/TSimpleTable.vue';
+import TText from '@/components/TText.vue'
+
 import { IDashboardTileItem } from '@/data/dashboard/DashboardStore';
 import { ThingStore } from '@/data/td/ThingStore';
-import { matRemove } from '@quasar/extras/material-icons';
 import { TDProperty, ThingTD } from '@/data/td/ThingTD';
 import { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
-import TSimpleTable from '../../components/TSimpleTable.vue';
-import { QTooltip } from 'quasar';
 import { PropNameDeviceType, PropNameName } from '@/data/td/Vocabulary';
-import { get as _get} from 'lodash-es'
 
 
 /**
- * Table that shows a list of dashboard tile items
+ * This component shows a table with the items name and value from a dashboard tile
  */
+
+
 const props = defineProps<{
   /**
    * Reduce padding to compact layout
@@ -52,12 +56,16 @@ const props = defineProps<{
   thingStore: ThingStore
 }>()
 
-const emits = defineEmits(["onRemoveTileItem"])
+const emits = defineEmits([
+  "onRemoveTileItem", 
+  // @param: IDashboardTileItem
+  "onEditTileItem"
+  ])
 
-// tile item to display
+// Thing Property item to display
 interface IThingTileItem {
   key: string,
-  item: IDashboardTileItem,
+  tileItem: IDashboardTileItem,
   td?: ThingTD,
   tdProp?: TDProperty,
 }
@@ -65,31 +73,31 @@ interface IThingTileItem {
 /**
  * Return the list of Thing tile items from a dashboard tile item list
  */
-const getThingTileItems = (items:IDashboardTileItem[]|undefined): 
+const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined): 
   IThingTileItem[] => {
 
   let itemAndProps: IThingTileItem[] = []
-  if (items) {
-    items.forEach(item=>{
-      let td = props.thingStore.GetThingTDById(item.thingID)
+  if (tileItems) {
+    tileItems.forEach(tileItem=>{
+      let td = props.thingStore.GetThingTDById(tileItem.thingID)
       if (!td) {
         // FIXME: when not connected. Should the item still be shown with a N/A value?
-        console.warn("TileItemsTable.getThingTileItems. Missing TD '%s'", item.thingID)
+        console.warn("TileItemsTable.getThingTileItems. Missing TD '%s'", tileItem.thingID)
         itemAndProps.push({
-          key: item.thingID+"."+item.propertyID,
-          item: item, 
+          key: tileItem.thingID+"."+tileItem.propertyID,
+          tileItem: tileItem, 
           // td: td,
           // tdProp: tdProp,
         })
         return
       }
-      let tdProp = td.properties[item.propertyID]
+      let tdProp = td.properties[tileItem.propertyID]
       if (!tdProp) {
-        console.warn("TileItemsTable.getThingTileItems. Missing prop '%s' in TD '%s'", item.propertyID, item.thingID)
+        console.warn("TileItemsTable.getThingTileItems. Missing prop '%s' in TD '%s'", tileItem.propertyID, tileItem.thingID)
       }
       itemAndProps.push({
-        key: item.thingID+"."+item.propertyID,
-        item: item, 
+        key: tileItem.thingID+"."+tileItem.propertyID,
+        tileItem: tileItem, 
         td: td,
         tdProp: tdProp,
       })
@@ -99,69 +107,84 @@ const getThingTileItems = (items:IDashboardTileItem[]|undefined):
   return itemAndProps
 }
 
-const getThingPropValue = (item:IThingTileItem):string => {
-  if (!item || !item.tdProp) {
+const getThingPropValue = (thingItem:IThingTileItem):string => {
+  if (!thingItem || !thingItem.tdProp) {
     return "n/a"
   }
-  let valueStr = item.tdProp.value + " " + (item.tdProp?.unit ? item.tdProp?.unit:"")
+  let valueStr = thingItem.tdProp.value + " " + (thingItem.tdProp?.unit ? thingItem.tdProp?.unit:"")
   return valueStr
 }
 
 /**
- * Return the property name for presentation in the following order
- *  1. DashboardTileItem's label     (which is an override)
- *  2. thing's name property   (yes, not the property name)
- *  3. thing's description
- *  4. property title
+ * Return the tile item name including a tooltip.
+ * The property name is the customized property label or its TD name - property name 
  *  
  * This uses the thing's name or description if name is not configured
- * A tooltip shows more info
+ * A tooltip shows more info.
+ * Property name edit button is shown in edit mode and triggers a name edit dialog.
  */
-const getThingPropName = (tileItem:IThingTileItem):VNode => {
-  // 1. default use the tile item's label override
-  let thingName = tileItem.item.label
-  // 2. use thing's name property  (not property name)
-  if (!thingName) {
-    let tdProps = tileItem.td?.properties
-    let thingNameProp = _get(tdProps, PropNameName)
-    if (thingNameProp) {
-      thingName = thingNameProp.value
-    }
-  }
-  // 3. use thing's description (if no name property is defined)
-  if (!thingName) {
-    thingName = tileItem.td?.description
-    if (tileItem.td?.deviceType) {
-      thingName += " (" + tileItem.td.deviceType + ")"
-    }
-  }
-  // 4. finally, use property 'title' 
-  if (!thingName) {
-    thingName = tileItem.tdProp?.title
-  } 
-  // 5. last resort use property ID
-  if (!thingName) {
-    thingName = tileItem.item.propertyID
-  }
+const getTileItemName = (thingItem:IThingTileItem):VNode => {
+  // 1: The item defined label takes precedence
+  let propName = thingItem.tileItem.label
+  let tdProp = thingItem.tdProp
 
-  let comp = h('span',
-              {'style': 'width:"100%"'},
-              [ (tileItem.tdProp) ? tileItem.tdProp.title : tileItem.item.propertyID,
+  if (!propName) {
+    if (tdProp) {
+      propName = tdProp.title
+    }
+    // prefix with thing name if it is in the thing's property list
+    let tdProps = thingItem.td?.properties
+    // let thingNameProp = _get(tdProps, PropNameName)
+    let thingNameProp = _get(tdProps, 'Name')
+    if (thingNameProp) {
+      propName = thingNameProp.value + " " + propName
+    }
+  }
+  // tooltip text is the Thing's description - property ID
+  let tooltip1 = thingItem.td?.description + "; " + thingItem.tileItem.propertyID
+  tooltip1 += " (" + thingItem.td?.deviceType + ")"
+  let tooltip2 = "Thing ID: " + thingItem.td?.id
+
+  // note: the following tooltip construct is horrid. Is there a more readable way?
+  let comp = h('span', 
+              {style: 'color: green; width:"100%"; display:flex'},
+              [ propName,
                 h(QTooltip, {
                     style: 'font-size:inherit',
-                  }, ()=>thingName
+                  }, ()=>[h('p',tooltip1), h('p',tooltip2)]
                 ),
+                // edit button to edit property display name
+                props.editMode ? 
+                h(TButton, {
+                  icon:matEdit, round:true, dense:true, flat:true, height:'10px', 
+                  style: "min-width: 1.5em; position: absolute; right:0",
+                  tooltip:"Edit name",
+                  onClick: ()=>handleEditLabel(thingItem),
+                }):null,
               ]
   )
+  // let comp = h(TText, 
+  //              { tooltip: h('p',tooltip1), 
+  //             },
+  //             <div>propName</div>, 
+  // )
   return comp
 }
 
 /**
  * User clicked the 'remove' button while in edit mode
  */
-const handleRemove = (row:any) => {
-  console.log("TileItemsTable.handleRemove: row=", row, "row.row",row.row)
-  emits("onRemoveTileItem", row.item)
+const handleRemove = (row:IThingTileItem) => {
+  console.log("TileItemsTable.handleRemove: row=", row)
+  emits("onRemoveTileItem", row.tileItem)
+}
+
+/**
+ * Edit the tile property display name
+ */
+const handleEditLabel = (thingItem:IThingTileItem) => {
+  console.log("TileItemsTable.handleEditName: item=", thingItem.key)
+  emits("onEditTileItem", thingItem.tileItem)
 }
 
 /**
@@ -187,17 +210,12 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
       // Show property name. TODO: use label field
       title: "Property Name", 
       field: "tdProp.title", 
-      // width: "%", 
-      // maxWidth: "0",
+      width: "60%",
       component: (row:IThingTileItem)=>h('span',
          {'style': 'width:"100%"'},
-         getThingPropName(row)
-        //  [ row.tdProp.title,
-        //    h(QTooltip, {
-        //      style: 'font-size:inherit',
-        //      }, ()=>row.item.thingID
-        //    ),
-        //  ]
+         [getTileItemName(row),
+         
+          ]
       ),
       align: 'left'
     }, {

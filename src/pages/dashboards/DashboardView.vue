@@ -23,6 +23,15 @@ import DashboardTile from "./DashboardTile.vue";
 import TButton from "@/components/TButton.vue";
 import EditTileDialog from "./EditTileDialog.vue";
 
+
+export interface ILayoutItem {
+  i: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+}
+
 const $q = useQuasar()
 /**
  * Dashboard view shows the dashboard with the given name
@@ -36,13 +45,6 @@ const props = defineProps<{
 
 const gridLayout = ref()
 
-export interface ILayoutItem {
-  i: string,
-  x: number,
-  y: number,
-  w: number,
-  h: number
-}
 
 const data = reactive({
   dashboard: dashStore.GetDashboardByName(props.dashboardName) ,
@@ -272,6 +274,7 @@ const updateDashboardLayout = (dashboard:DashboardDefinition|undefined) => {
           :dashboard="data.dashboard"
           :thingStore="thingStore"
           :dashStore="dashStore"
+          :editMode="appState.State().editMode"
           />
       </grid-item> 
     </GridLayout>

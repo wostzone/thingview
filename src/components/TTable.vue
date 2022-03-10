@@ -3,23 +3,6 @@
 import {QTable} from "quasar";
 import {ref} from "vue";
 
-// Simple table with sticky header style, inline scrollbar, no pagination
-// All QTable slots are available to the parent, most importantly:
-//  header-cell-[name]  
-//  body-cell-[name]
-const props = defineProps<{
-  // columns to display
-  columns: Array<ITableCol>
-  // the collection to display
-  rows: any
-  // unique ID of each row, typically 'id' 
-  rowKey: string
-  // dense rows
-  dense?: boolean
-  // striped rows
-  striped?: boolean
-}>()
-
 // types for columns (fixes a typescript error on align)
 export interface ITableCol {
   // Name of column for show/hide
@@ -37,6 +20,24 @@ export interface ITableCol {
   // Optional style for display of the column data
   style?:string
 }
+
+// Simple table with sticky header style, inline scrollbar, no pagination
+// All QTable slots are available to the parent, most importantly:
+//  header-cell-[name]  
+//  body-cell-[name]
+const props = defineProps<{
+  // columns to display
+  columns: Array<ITableCol>
+  // the collection to display
+  rows: any
+  // unique ID of each row, typically 'id' 
+  rowKey: string
+  // dense rows
+  dense?: boolean
+  // striped rows
+  striped?: boolean
+}>()
+
 
 const pagination = ref({
   rowsPerPage: 0
@@ -59,7 +60,8 @@ const pagination = ref({
       virtual-scroll
   >
    <!-- export the slots -->
-    <template v-for="(index, name:string|number) in $slots" v-slot:[name]="props">
+    <!-- <template v-for="(index, name:string|number) in $slots" v-slot:[name]="props"> -->
+    <template v-for="(index, name) in $slots" v-slot:slotname="props">
       <!-- pass all props to the named slot -->
       <slot :name="name" v-bind="props" > </slot>
     </template>

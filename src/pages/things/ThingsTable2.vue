@@ -7,6 +7,7 @@ import {matVisibility} from "@quasar/extras/material-icons"
 import TSimpleTable, { ISimpleTableColumn } from "@/components/TSimpleTable.vue";
 import { h } from "vue";
 import {ThingsRouteName} from "@/router";
+import { PropNameName } from "@/data/td/Vocabulary";
 // use formatDate without pulling in the rest of quasar
 const {formatDate} = date
 
@@ -24,10 +25,20 @@ const emit = defineEmits([
   'onViewDetails'
 ])
 
+// Get the 'name' of a Thing
+// this returns the value of its 'name' property
+const getThingName = (td:ThingTD): string => {
+  let tdProp = ThingTD.GetThingProperty(td, PropNameName)
+  return tdProp? tdProp.value : ""
+}
+
 // The column field name should match the TD field names
 const columns: Array<ISimpleTableColumn> = [
   // {name: "edit", label: "", field: "edit", align:"center"},
   // Use large width to minimize the other columns
+  {title: "Name", field:"name" , align:"left", width:"200px",
+    component: (row:any) => h('span', {}, getThingName(row))
+  },
   {title: "Thing ID", field:"id" , align:"left", width:"400px", hidden:true,
   },
   {title: "Publisher", field:"publisher" , align:"left",
@@ -47,7 +58,7 @@ const columns: Array<ISimpleTableColumn> = [
   {title: "@Type", field:"@type", align:"left", 
   },
   {title: "Created", field:"created", align:"left", 
-    // format: (val, row) => getDateText(val),
+    component: (row: ThingTD) => h('span',{}, getDateText(row.created)),
   },
 ]
 // Convert iso9601 date format to text representation 
