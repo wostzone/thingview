@@ -21,14 +21,15 @@ The status of this plugin is in-development. It is operational but limited in fu
   - manage groups: todo
 - Overview of known Things
   - View list of Things: basic
+  - View thing details: basic
   - Configure Thing: todo
 - Dashboard
   - Manage Dashboards: done
   - Multi-breakpoint tiled layout: basic 
   - Store layout with account: todo
 - View/edit dashboard widget tiles
-  - Single-value card: in development
-  - Multi-value card: todo
+  - Single-value card: basic
+  - Multi-value card: basic
   - Image card: todo
   - Temperature gauge: todo
   - on/off switch: todo

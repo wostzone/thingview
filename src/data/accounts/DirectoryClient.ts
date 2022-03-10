@@ -1,7 +1,7 @@
 // Constants for use by applications
 import fs from 'fs'
-import { ThingTD } from './ThingTD'
-import dirStore, { ThingStore } from "./ThingStore"
+import { ThingTD } from '../td/ThingTD'
+import dirStore, { ThingStore } from "../td/ThingStore"
 
 
 const DefaultServiceName = "thingdir"
@@ -147,18 +147,18 @@ export default class DirectoryClient {
     //     ca: this.caCert,
     //     body: jsonPayload,
     // }
-    console.log("DirectoryClient.ListTDs: from '%s'. offset=%s, limite=%s", url, offset, limit)
+    console.log("DirectoryClient.ListTDs: from '%s'. offset=%s, limit=%s", url, offset, limit)
     let done = false
     let tds: Array<ThingTD> = new Array<ThingTD>()
     while (!done) {
       await this.GetTDBatch(url, offset, limit)
         .then((items: Array<ThingTD>) => {
-          // only continue if limit nr results is received
-          done = (items.length < limit)
           if (!done) {
             tds.push(...items)
             offset += items.length
           }
+          // only continue if limit nr results is received
+          done = (items.length < limit)
         }).catch((err) => {
           throw (err)
         })
@@ -175,19 +175,19 @@ export default class DirectoryClient {
     // TODO: repeat until all things are collected
     return this.ListTDs(0, 0)
       .then((things: ThingTD[]) => {
-      console.log("DirectoryClient.LoadDirectory: Received directory update containing '%s' items", things.length)
-      for (let td of things) {
-        let parts = ThingTD.GetThingIDParts(td.id)
-        td.zone = parts.zone
-        td.deviceID = parts.deviceID
-        td.publisher = parts.publisherID
-        td.deviceType = parts.deviceType
-        this.store.Update(td)
-      }
-    }).catch((reason: any) => {
-      console.warn("Failed retrieving directory: ", reason)
-      throw (reason)
-    })
+        console.log("DirectoryClient.LoadDirectory: Received directory update containing '%s' items", things.length)
+        for (let td of things) {
+          let parts = ThingTD.GetThingIDParts(td.id)
+          td.zone = parts.zone
+          td.deviceID = parts.deviceID
+          td.publisher = parts.publisherID
+          td.deviceType = parts.deviceType
+          this.store.Update(td)
+        }
+      }).catch((reason: any) => {
+        console.warn("Failed retrieving directory: ", reason)
+        throw (reason)
+      })
   }
 
 

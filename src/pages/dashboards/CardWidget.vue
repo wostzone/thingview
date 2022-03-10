@@ -50,7 +50,6 @@ const getThingPropValue = (item:IDashboardTileItem):string => {
   return valueStr
 }
 
-
 const item0 = ref(props.tile?.items?.[0])
 // console.debug("CardWidget. props.config=", props.tile)
 
@@ -60,10 +59,10 @@ const item0 = ref(props.tile?.items?.[0])
   <div v-if="props.tile.items && props.tile.items?.length>1"
     class="card-widget"
   >
-    <TileItemsTable  
+    <TileItemsTable
         :tileItems="props.tile?.items"
         :thingStore="props.thingStore"
-        grow 
+        grow
         flat dense
         noBorder noHeader
     />

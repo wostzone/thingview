@@ -124,6 +124,15 @@ export class ThingTD extends Object {
     return res
   }
 
+  // Return the TD property with the given ID
+  public static GetThingProperty = (td: ThingTD, propID: string): TDProperty | undefined => {
+    let tdProp: TDProperty | undefined = undefined
+    if (!!td && !!td.properties) {
+      tdProp = td.properties[propID]
+    }
+    return tdProp
+  }
+
 
   // Convert the writable properties into an array for display
   // Returns table of {key, tdproperty}

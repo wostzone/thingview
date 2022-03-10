@@ -8,8 +8,8 @@ import {matLensBlur} from "@quasar/extras/material-icons"
 import ds from "@/data/td/ThingStore"
 // import ThingsTable from "./ThingsTable.vue"
 import { ThingTD } from "@/data/td/ThingTD"
-// import ThingDetails from "./ThingDetailsDialog.vue"
 import ThingsTable2 from "./ThingsTable2.vue"
+// import ThingsTable from "./ThingsTable.vue"
 
 // const things = (ds.all: TDCollection):Array<ThingTD>  {
 //     return Array.from(ds.index.values())
