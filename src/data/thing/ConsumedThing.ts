@@ -65,6 +65,13 @@ export class ConsumedThing {
     this.eventMap = new Map<string, InteractionOutput>()
     // property store with most recent property values
     this.propertyMap = new Map<string, InteractionOutput>()
+
+    // ensure all properties exist
+    for (const propName in td.properties) {
+      let propertyAffordance = td.properties[propName]
+      let io = new InteractionOutput("n/a", DateTime.invalid("value not set"), propertyAffordance)
+      this.propertyMap.set(propName, io)
+    }
   }
 
   // Returns the internal slot of the ConsumedThing object that represents the 

@@ -86,11 +86,11 @@ const getAge =(isoTime: string): string => {
 // @param td the TD whose properties to show
 // @param propNames with names of properties to show, or undefined to show all
 const propertiesToShow = (cThing:ConsumedThing, propNames?:string[]): Array<IProperyDisplayInfo> => {
-  let names:string[] 
+  // let names = new Array<string>() 
   if (!propNames) {
     propNames = new Array<string>()
     Object.entries(cThing.td.properties).forEach(([name]) => {
-      names.push(name)
+      propNames?.push(name)
     })
   }
   // let cThing = getConsumedThing(td)

@@ -33,14 +33,6 @@ const data = reactive({
   searchInput: "",
 })
 
-/**
- * Get a list of things to display
- */
-const getAllThings = ():Array<ThingTD> => {
-  let tdList = props.things
-  return tdList
-}
-
 
 const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDPropertyAffordance)=>{
   onDialogOK({td:td, thingID:td.id, propID:propID, tdProp:tdProp})
@@ -61,7 +53,7 @@ const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDPropertyA
       <QInput label="Search" v-model="data.searchInput"/>
       <QList>
         <!-- Accordion to select a Thing and view its properties -->
-        <QExpansionItem v-for="td in getAllThings()"
+        <QExpansionItem v-for="td in props.things"
           :label="td.publisher + (td.description ? (' - ' + td.description) : '')" 
           :label-lines="1"
           group="tdgroup"
