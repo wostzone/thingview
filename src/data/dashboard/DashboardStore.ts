@@ -21,7 +21,7 @@ export interface IDashboardTileItem {
    */
   thingID: string
   /**
-   * ID of the thing property to display
+   * name of the thing property to display
    */
   propertyID: string,
 }
@@ -85,7 +85,7 @@ export class DashboardDefinition extends Object {
 
 // DirectoryStore implements the data of Thing Description records
 export class DashboardStore {
-  data: {dashboards:Array<DashboardDefinition>}
+  private data: { dashboards: Array<DashboardDefinition> }
 
   /**
    * Create the Dashboard store instance
@@ -100,12 +100,12 @@ export class DashboardStore {
    * Add a new dashboard
    * @param dashboard to add
    */
-  AddDashboard(dashboard: DashboardDefinition) {
+  addDashboard(dashboard: DashboardDefinition) {
     console.info("AddDashboard %s", dashboard.name)
     let newDash = JSON.parse(JSON.stringify(dashboard))
     newDash.id = nanoid(8)
     this.data.dashboards.push(newDash)
-    this.Save()
+    this.save()
   }
 
   /**
@@ -113,7 +113,7 @@ export class DashboardStore {
    * @param dashboard to add the tile to
    * @param tile to add
    */
-  AddTile(dashboard: DashboardDefinition, tile: DashboardTileConfig) {
+  addTile(dashboard: DashboardDefinition, tile: DashboardTileConfig) {
     console.info("AddTile %s to dashboard %s", tile.title, dashboard.name)
     const dash = this.data.dashboards.find((item)=>item.id == dashboard.id)
     if (!dash) {
@@ -122,14 +122,14 @@ export class DashboardStore {
     }
     let clone = JSON.parse(JSON.stringify(tile))
     dash.tiles[clone.id] = clone
-    this.Save()
+    this.save()
   }
 
   /**
    * Delete a dashboard
    * @param dashboard to remove.
    */
-  DeleteDashboard(dashboard: DashboardDefinition) {
+  deleteDashboard(dashboard: DashboardDefinition) {
     console.info("RemoveDashboard %s", dashboard.name)
 
     // FIXME: concurrency ?
@@ -139,7 +139,7 @@ export class DashboardStore {
       return
     }
     this.data.dashboards.splice(index, 1)
-    this.Save()
+    this.save()
   }
 
   /**
@@ -147,7 +147,7 @@ export class DashboardStore {
    * @param dashboard that contains the tile
    * @param tile to remove
    */
-  DeleteTile(dashboard: DashboardDefinition, tile: DashboardTileConfig) {
+  deleteTile(dashboard: DashboardDefinition, tile: DashboardTileConfig) {
     console.info("DeleteTile '%s' from dashboard '%s'", tile.title, dashboard.name)
 
     let index = this.data.dashboards.findIndex((db) => db.id == dashboard.id);
@@ -159,7 +159,7 @@ export class DashboardStore {
     let dashboardInStore = this.data.dashboards[index]
     delete dashboardInStore.tiles[tile.id]
 
-    this.Save()
+    this.save()
   }
 
 
@@ -175,7 +175,7 @@ export class DashboardStore {
    * Return the dashboard with the given id
    * @param id of existing dashboard to get
    */
-  GetDashboardByID(id: string | undefined): DashboardDefinition | undefined {
+  getDashboardByID(id: string | undefined): DashboardDefinition | undefined {
     if (!id) {
       return undefined
     }
@@ -191,7 +191,7 @@ export class DashboardStore {
    * This returns undefined if no dashboard with the name exists
    * @param name of existing dashboard to get
    */
-  GetDashboardByName(name: string): DashboardDefinition | undefined {
+  getDashboardByName(name: string): DashboardDefinition | undefined {
     if (!name) {
       return undefined
     }
@@ -205,7 +205,7 @@ export class DashboardStore {
   /**
    * Load the dashboard definitions from the store
    */
-  Load() {
+  load() {
     let serializedDashes = localStorage.getItem(storageKey)
     if (serializedDashes != null) {
       let dashes = JSON.parse(serializedDashes)
@@ -226,7 +226,7 @@ export class DashboardStore {
    * @param dashboard to update
    * @constructor
    */
-  UpdateDashboard(dashboard: DashboardDefinition) {
+  updateDashboard(dashboard: DashboardDefinition) {
     console.log("UpdateDashboard %s", dashboard.name)
     let index = this.data.dashboards.findIndex((db)=>db.id == dashboard.id);
     if (index < 0) {
@@ -236,7 +236,7 @@ export class DashboardStore {
     }
     let newDash = JSON.parse(JSON.stringify(dashboard))
     this.data.dashboards[index] = newDash
-    this.Save()
+    this.save()
   }
 
   /**
@@ -244,7 +244,7 @@ export class DashboardStore {
    * @param dashboard the tile belongs to
    * @param tile to update
    */
-  UpdateTile(dashboard: DashboardDefinition, tile: DashboardTileConfig) {
+  updateTile(dashboard: DashboardDefinition, tile: DashboardTileConfig) {
     console.log("UpdateTile '%s' in dashboard %s'", tile.title, dashboard.name)
     let index = this.data.dashboards.findIndex((db) => db.id == dashboard.id);
     if (index < 0) {
@@ -255,13 +255,13 @@ export class DashboardStore {
     let dash = this.data.dashboards[index]
     let newTile = JSON.parse(JSON.stringify(tile))
     dash.tiles[newTile.id] = newTile
-    this.Save()
+    this.save()
   }
 
   /**
    *  Save the new dashboard definition to store
    */
-  Save() {
+  save() {
     console.log(`DashboardStore.Save. Saving ${this.data.dashboards.length} dashboards to local storage.`)
     let serializedStore = JSON.stringify(this.data.dashboards)
     localStorage.setItem(storageKey, serializedStore)
@@ -269,5 +269,4 @@ export class DashboardStore {
   }
 }
 
-const dashboardStore = new DashboardStore();
-export default dashboardStore;
+export const dashboardStore = new DashboardStore();

@@ -3,7 +3,6 @@
 import {reactive} from "vue";
 
 import {useQuasar, QToggle} from 'quasar';
-const $q = useQuasar()
 import router from '@/router'
 import {matDashboard} from "@quasar/extras/material-icons";
 
@@ -26,21 +25,21 @@ import AppPagesBar from "./AppPagesBar.vue";
 import TConnectionStatus from "@/components/TConnectionStatus.vue"
 import {IMenuItem} from "@/components/TMenuButton.vue";
 
-import {ConnectionManager, IConnectionStatus} from "@/data/accounts/ConnectionManager";
+import {IConnectionStatus} from "@/data/accounts/IConnectionStatus";
 import {DashboardDefinition, DashboardStore, DashboardTileConfig} from "@/data/dashboard/DashboardStore";
 import {AppState} from '@/data/AppState'
 
+const $q = useQuasar()
 
 interface IAppHeader {
   appState: AppState
-  cm: ConnectionManager
   dashStore: DashboardStore
   connectionStatus: IConnectionStatus
 }
 const props = defineProps<IAppHeader>()
 
 // for convenience
-const currentState = props.appState.State()
+const currentState = props.appState.state
 
 // const emit = defineEmits([
 //     "onMenuAction",
@@ -69,7 +68,7 @@ const handleAddDashboard = () => {
     // cancel: true,
     // ok: true,
   }).onOk((newDashboard:DashboardDefinition)=> {
-    props.dashStore.AddDashboard(newDashboard)
+    props.dashStore.addDashboard(newDashboard)
     // select the new dashboard
     router.push(DashboardPrefix+"/" +newDashboard.name)
   })
@@ -84,7 +83,7 @@ const handleAddTile = (dashboard:DashboardDefinition) => {
       tile: new DashboardTileConfig(),
     },
   }).onOk((newTile:DashboardTileConfig)=> {
-    props.dashStore.AddTile(dashboard, newTile)
+    props.dashStore.addTile(dashboard, newTile)
     $q.notify("A new Tile has been added to Dashboard "+dashboard.name)
   })
 }
@@ -95,7 +94,7 @@ const handleDeleteDashboard = (dashboard: DashboardDefinition) => {
     message: "This will delete dashboard '"+dashboard.name+"'. Please confirm",
     cancel: true,
   }).onOk(()=> {
-    props.dashStore.DeleteDashboard(dashboard)
+    props.dashStore.deleteDashboard(dashboard)
     let newDashName = DashboardPrefix+"/"+props.dashStore.dashboards[0]?.name
     console.log("handleDeleteDashboard: Changing route to ", newDashName)
     router.push(newDashName )
@@ -115,7 +114,7 @@ const handleEditDashboard = (dashboard:DashboardDefinition) => {
     // cancel: true,
     // ok: true,
   }).onOk((newDashboard:DashboardDefinition)=> {
-    props.dashStore.UpdateDashboard(newDashboard)
+    props.dashStore.updateDashboard(newDashboard)
     let newDashName = DashboardPrefix+"/"+newDashboard.name
     console.log("Changing route to ", newDashName)
     router.push(newDashName )
@@ -124,7 +123,7 @@ const handleEditDashboard = (dashboard:DashboardDefinition) => {
 
 const handleEditModeChange = (ev:any)=>{
   console.log("AppHeader: emit onEditModeChange")
-  props.appState.SetEditMode(ev == true)
+  props.appState.setEditMode(ev == true)
 }
 
 // Show the edit tile dialog
@@ -137,7 +136,7 @@ const handleEditTile = (dashboard:DashboardDefinition, tile:DashboardTileConfig)
       tile: tile,
     },
   }).onOk((newTile:DashboardTileConfig)=> {
-    props.dashStore.UpdateTile(dashboard, newTile)
+    props.dashStore.updateTile(dashboard, newTile)
   })
 }
 
@@ -213,7 +212,7 @@ const handleMenuAction = (menuItem:IMenuItem, dashboard?:DashboardDefinition) =>
     <!-- Connection Status -->
 <!--    <TButton  icon="mdi-link-off" flat tooltip="Connection Status & Configuration"/>-->
     <TConnectionStatus 
-      :value="props.cm.connectionStatus"
+      :value="props.connectionStatus"
       :to="{name: AccountsRouteName}"
     />
 

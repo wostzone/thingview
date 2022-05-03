@@ -30,6 +30,7 @@
     "http-proxy-middleware": "^2.0.3",
     "jwt-decode": "^3.1.2",
     "lodash-es": "^4.17.21",
+    "luxon": "^2.3.2",
     "mqtt": "^4.2.8",
     "nanoid": "^3.1.30",
     "quasar": "^2.3.3",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@quasar/vite-plugin": "^1.0.3",
     "@rollup/plugin-node-resolve": "^13.0.6",
+    "@types/luxon": "^2.3.1",
     "@types/node": "^16.11.10",
     "@vitejs/plugin-vue": "^1.10.1",
     "pkg": "^5.5.2",

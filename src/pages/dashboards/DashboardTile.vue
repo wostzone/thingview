@@ -5,9 +5,9 @@ import {DashboardDefinition, DashboardStore, DashboardTileConfig, IDashboardTile
 import {useQuasar, QCard, QCardSection, QBtn, QToolbar, QToolbarTitle} from "quasar";
 import CardWidget from './CardWidget.vue'
 import {matContentCopy, matContentPaste, matCopyAll, matDelete, matEdit, matMenu} from "@quasar/extras/material-icons";
-import { ThingStore } from "@/data/td/ThingStore";
 import TMenuButton, { IMenuItem } from "@/components/TMenuButton.vue";
 import EditTileDialog from "./EditTileDialog.vue";
+import { ConsumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
 
 const $q = useQuasar()
 
@@ -27,9 +27,9 @@ const props = defineProps<{
   editMode: boolean
 
 /**
-   * Things data storage
+   * Collection of consumed things for display of the tile items
    */
-  thingStore: ThingStore
+  cThingFactory: ConsumedThingFactory
 
   /**
    * Tile to edit
@@ -64,7 +64,7 @@ const widgetTypes:IWidgetTypes = {
  * Submit an updated tile to the store
  */
 const handleSubmitTile = (newTile:DashboardTileConfig) => {
-    props.dashStore.UpdateTile(props.dashboard, newTile)
+    props.dashStore.updateTile(props.dashboard, newTile)
     $q.notify({position: 'top',type: 'positive',
       message: 'Tile '+props.tile.title+' has been saved.'
     })
@@ -89,7 +89,7 @@ const handleEditTile = (config:DashboardTileConfig) => {
       tile: props.tile,
     },
   }).onOk((newTile:DashboardTileConfig)=> {
-    props.dashStore.UpdateTile(props.dashboard, newTile)
+    props.dashStore.updateTile(props.dashboard, newTile)
     $q.notify({position: 'top',type: 'positive',
       message: 'Tile '+props.tile.title+' has been saved.'
     })
@@ -103,7 +103,7 @@ const handleDeleteTile = () => {
     message: "This will delete Tile '"+props.tile.title+"'. Please confirm",
     cancel: true,
   }).onOk(()=> {
-    props.dashStore.DeleteTile(props.dashboard, props.tile)
+    props.dashStore.deleteTile(props.dashboard, props.tile)
     // delete props.dashboard.tiles[props.config.id]
 
     console.info("Dashboard tile %s deleted", props.tile.title)
@@ -154,8 +154,8 @@ const handleMenuAction = (menuItem:IMenuItem) => {
       <QCardSection class="tile-content-section">
         <CardWidget 
           :tile="props.tile" 
-          :thingStore="props.thingStore"
           :editMode="props.editMode"
+          :cThingFactory="props.cThingFactory"
         />
       </QCardSection>
 

@@ -10,7 +10,7 @@ import {useDialogPluginComponent, QForm, QInput} from "quasar";
 
 import TDialog from "@/components/TDialog.vue";
 import { IDashboardTileItem } from "@/data/dashboard/DashboardStore";
-import { TDProperty } from "@/data/td/ThingTD";
+// import { TDPropertyAffordance } from "@/data/thing/ThingTD";
 
 // inject dialog handlers
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();

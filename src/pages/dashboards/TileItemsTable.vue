@@ -10,10 +10,13 @@ import TSimpleTable from '../../components/TSimpleTable.vue';
 import TText from '@/components/TText.vue'
 
 import { IDashboardTileItem } from '@/data/dashboard/DashboardStore';
-import { ThingStore } from '@/data/td/ThingStore';
-import { TDProperty, ThingTD } from '@/data/td/ThingTD';
+// import { ThingStore } from '@/data/thing/ThingStore';
+import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
-import { PropNameDeviceType, PropNameName } from '@/data/td/Vocabulary';
+import { PropNameDeviceType, PropNameName } from '@/data/thing/Vocabulary';
+import { ConsumedThing } from '@/data/thing/ConsumedThing';
+import { ConsumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
+import InteractionOutput from '@/data/thing/InteractionOutput';
 
 
 /**
@@ -51,9 +54,9 @@ const props = defineProps<{
    */
   tileItems:IDashboardTileItem[]
   /**
-   * Lookup item values from this store
+   * Create consumed thing instances of a Thing for interaction
    */
-  thingStore: ThingStore
+  cThingFactory: ConsumedThingFactory
 }>()
 
 const emits = defineEmits([
@@ -62,16 +65,20 @@ const emits = defineEmits([
   "onEditTileItem"
   ])
 
-// Thing Property item to display
+/** Thing Property item to display  */
 interface IThingTileItem {
+  /** unique key of the item for display in collection */
   key: string,
+  /** the dashboard line item definition */
   tileItem: IDashboardTileItem,
-  td?: ThingTD,
-  tdProp?: TDProperty,
+  /** consumed thing for this property */
+  cThing?: ConsumedThing
+  /** The item property output */
+  propIO?: InteractionOutput
 }
 
 /**
- * Return the list of Thing tile items from a dashboard tile item list
+ * Return the list of Thing tile items to display, including thing instance property values
  */
 const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined): 
   IThingTileItem[] => {
@@ -79,10 +86,10 @@ const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined):
   let itemAndProps: IThingTileItem[] = []
   if (tileItems) {
     tileItems.forEach(tileItem=>{
-      let td = props.thingStore.GetThingTDById(tileItem.thingID)
-      if (!td) {
-        // FIXME: when not connected. Should the item still be shown with a N/A value?
-        console.warn("TileItemsTable.getThingTileItems. Missing TD '%s'", tileItem.thingID)
+      let cThing = props.cThingFactory.consumeWithID(tileItem.thingID)
+      // let td = props.thingStore.getThingTDById(tileItem.thingID)
+      if (!cThing) {
+        console.warn("TileItemsTable.getThingTileItems. Unknown thing with ID '%s'", tileItem.thingID)
         itemAndProps.push({
           key: tileItem.thingID+"."+tileItem.propertyID,
           tileItem: tileItem, 
@@ -91,15 +98,19 @@ const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined):
         })
         return
       }
-      let tdProp = td.properties[tileItem.propertyID]
-      if (!tdProp) {
+      // property values are provided through the 'consumed thing'
+      // let cThing = props.cThingFactory?.consume(td)
+      // let tdProp = td.properties[tileItem.propertyID]
+      let propIO = cThing.properties.get(tileItem.propertyID)
+      if (!propIO) {
         console.warn("TileItemsTable.getThingTileItems. Missing prop '%s' in TD '%s'", tileItem.propertyID, tileItem.thingID)
       }
       itemAndProps.push({
         key: tileItem.thingID+"."+tileItem.propertyID,
         tileItem: tileItem, 
-        td: td,
-        tdProp: tdProp,
+        cThing: cThing,
+        propIO: propIO,
+        // tdProp: tdProp,
       })
     })
   }
@@ -108,10 +119,11 @@ const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined):
 }
 
 const getThingPropValue = (thingItem:IThingTileItem):string => {
-  if (!thingItem || !thingItem.tdProp) {
+  if (!thingItem || !thingItem.cThing) {
     return "n/a"
   }
-  let valueStr = thingItem.tdProp.value + " " + (thingItem.tdProp?.unit ? thingItem.tdProp?.unit:"")
+  let propName  = thingItem.tileItem.propertyID
+  let [valueStr] = thingItem.cThing.getPropertyValueText(propName)
   return valueStr
 }
 
@@ -126,17 +138,15 @@ const getThingPropValue = (thingItem:IThingTileItem):string => {
 const getTileItemLabel = (thingItem:IThingTileItem):VNode => {
   // 1: The item defined label takes precedence
   let propName = thingItem.tileItem.label
-  let tdProp = thingItem.tdProp
   let defaultLabel = ""
 
-  if (thingItem.td && tdProp) {
-    defaultLabel = tdProp.title
+  if (thingItem.propIO?.schema) {
+    defaultLabel = thingItem.propIO.schema.title
     
-    // prefix default label with the thing's name if available
-    // let pn = ThingTD.GetThingProperty(thingItem.td, PropNameName)
-    let pn = ThingTD.GetThingProperty(thingItem.td, 'Name')
-    if (pn) {
-      defaultLabel = pn.value + " " + defaultLabel
+    // prefix default label with the thing's 'Name' property if available
+    let nameProp = thingItem.cThing?.properties.get(PropNameName)
+    if (nameProp && nameProp.value) {
+      defaultLabel = nameProp.value + " " + defaultLabel
     }
   }
   if (propName == "") {
@@ -167,9 +177,9 @@ const getTileItemLabel = (thingItem:IThingTileItem):VNode => {
 const getTileItemTooltip = (thingItem:IThingTileItem):VNode => {
   // 1: The item defined label takes precedence
   // tooltip text is the Thing's description - property ID
-  let tooltip1 = thingItem.td?.description + "; " + thingItem.tileItem.propertyID
-  tooltip1 += " (" + thingItem.td?.deviceType + ")"
-  let tooltip2 = "Thing ID: " + thingItem.td?.id
+  let tooltip1 = thingItem.cThing?.td.description + "; " + thingItem.tileItem.propertyID
+  tooltip1 += " (" + thingItem.cThing?.td.deviceType + ")"
+  let tooltip2 = "Thing ID: " + thingItem.cThing?.id
 
   // note: the following tooltip construct is horrid. Is there a more readable way?
   let comp = h(QTooltip, 

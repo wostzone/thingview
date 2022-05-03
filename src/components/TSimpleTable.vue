@@ -7,6 +7,7 @@
 import {h, VNode } from 'vue';
 import {get as _get} from 'lodash-es'
 import {QMarkupTable, QTooltip} from "quasar";
+import { stringify } from 'querystring';
 
 // Table Column Definition
 export interface ISimpleTableColumn {
@@ -60,7 +61,7 @@ const props = defineProps<{
   /**
    * Empty text
    */
-  emptyText?: string
+  noDataLabel?: string
   /**
    * Flat design, eg no border box shadow but with border
    */
@@ -87,8 +88,9 @@ const props = defineProps<{
   noStripes?: boolean
   /** 
    * Rows with objects to show. rows must have an id field
+   * This can be either an array or a map
    */
-  rows: any[]
+  readonly rows: Array<any> | Map<string,any>
   
 }>()
 
@@ -97,6 +99,20 @@ const emit = defineEmits(['onRowSelect'])
 // filter hidden columns
 const getVisibleColumns = (columns:ISimpleTableColumn[]):ISimpleTableColumn[] => {
   return columns.filter( (col)=>!col.hidden)
+}
+
+// determine if rows has any data
+const isEmpty = (rows:any[]|Map<string,any>): boolean => {
+  if (!rows) {
+    return true
+  }
+  if (rows instanceof(Array)) {
+    return (rows as Array<any>).length == 0
+  }
+  if (rows instanceof(Map)) {
+    return (rows as Map<string,any>).size == 0
+  }
+  return true
 }
 
 </script>
@@ -135,7 +151,10 @@ const getVisibleColumns = (columns:ISimpleTableColumn[]):ISimpleTableColumn[] =>
       overflow-y:auto;
       "
     >
-      <tr v-for="row in props.rows" 
+      <tr v-if="isEmpty(props.rows)">
+        <td :colspan='3'>{{props.noDataLabel||"No data"}}</td>
+      </tr>
+      <tr v-else v-for="row in props.rows" 
       style="width:100%"
         :key="row.key"
         :class="props.noStripes ? '' : 'with-stripes'"
@@ -164,9 +183,6 @@ const getVisibleColumns = (columns:ISimpleTableColumn[]):ISimpleTableColumn[] =>
           </div>
           <!-- <QTooltip v-if="column.tooltip">column.tooltip</QTooltip> -->
         </td>
-      </tr>
-      <tr v-if="props.rows.length===0">
-        <td :colspan='3'>{{props.emptyText||"No data"}}</td>
       </tr>
     </tbody>
     <!-- </table> -->

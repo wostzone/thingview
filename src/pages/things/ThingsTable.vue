@@ -2,7 +2,7 @@
 
 import { RouterLink } from 'vue-router';
 // import {ref} from 'vue'
-import {ThingTD} from "@/data/td/ThingTD";
+import {ThingTD} from "@/data/thing/ThingTD";
 import {date, QTd} from "quasar";
 import TTable, {ITableCol} from '@/components/TTable.vue'
 import {matVisibility} from "@quasar/extras/material-icons"

@@ -13,10 +13,10 @@ import TDialog from "@/components/TDialog.vue";
 import TButton from "@/components/TButton.vue";
 
 import { DashboardTileConfig, IDashboardTileItem, TileTypeCard, TileTypeImage } from "@/data/dashboard/DashboardStore";
-import thingStore from '@/data/td/ThingStore'
 import SelectThingPropertyDialog from "./SelectThingPropertyDialog.vue";
 import TileItemsTable from "./TileItemsTable.vue";
 import EditTileItemLabel from "./EditTileItemLabel.vue";
+import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
 
 const $q = useQuasar()
 
@@ -49,7 +49,7 @@ const handleAddThingProperty = () => {
      component: SelectThingPropertyDialog,
      componentProps: {
       //  tile: editTile,
-       things: thingStore.all,
+       things: consumedThingFactory.thingStore?.all,
       },
   }).onOk( (props)=>{
     let thingID=props.thingID
@@ -147,11 +147,11 @@ const handleSubmit = () =>{
       </p>
       <TileItemsTable v-if="editTile.items"
         :tileItems="editTile.items"
-        :thingStore="thingStore"
         dense flat
         edit-mode
         @onRemoveTileItem="handleRemoveTileItem"  
         @onEditTileItem="handleEditTileItemLabel"
+        :cThingFactory="consumedThingFactory"
         />
       <div v-else>Missing dashboard tile items</div>
     </QForm>

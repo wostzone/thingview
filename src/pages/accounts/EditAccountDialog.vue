@@ -2,9 +2,10 @@
 import {reactive, ref, watchEffect} from "vue";
 import TDialog from "@/components/TDialog.vue";
 import {useDialogPluginComponent, QCardSection, QField, QForm, QInput, QSpace, QToggle} from "quasar";
-import accountStore, {AccountRecord} from "@/data/accounts/AccountStore";
+import {accountStore, AccountRecord} from "@/data/accounts/AccountStore";
 import {useRouter} from "vue-router";
-import connectionManager from "@/data/accounts/ConnectionManager";
+import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
+import { thingStore } from "@/data/thing/ThingStore";
 
 /**
  * View/Edit account details
@@ -26,7 +27,7 @@ const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 
 
 let data = reactive({
-  editRecord: props.account ? {...props.account} : accountStore.NewAccountRecord(),
+  editRecord: props.account ? {...props.account} : accountStore.newAccountRecord(),
   password: "",
 })
 
@@ -66,17 +67,23 @@ const handleSubmit = () =>{
   editFormRef.value.validate(true)
     .then((success:boolean)=>{
       if (success) {
-        accountStore.Update(data.editRecord)
+        accountStore.update(data.editRecord)
         // connectionManager.Connect(data.editRecord)
         if (data.editRecord.enabled && data.password) {
+          consumedThingFactory.authenticate(data.editRecord, data.password)
           // re-authenticate
-          connectionManager.Authenticate(data.editRecord, data.password)
+          // connectionManager.Authenticate(data.editRecord, data.password)
               .then(()=>{
-                // if authentication succeeds
-                connectionManager.Connect(data.editRecord)
+                // if authentication succeeds, connect to the default things store
+                consumedThingFactory.connect(
+                  data.editRecord, 
+                  thingStore)
               })
         } else if (!data.editRecord.enabled) {
-          connectionManager.Disconnect(data.editRecord.id)
+          // this the active account got disabled, disconnect the factory
+          if (data.editRecord.id == consumedThingFactory.connectionStatus.account?.id) {
+            consumedThingFactory.disconnect()
+          }
         }
         emit('onSubmit', data.editRecord)
         // handleClose()

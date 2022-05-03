@@ -1,16 +1,22 @@
 <script setup lang="ts">
 
-import {TDAction, ThingTD} from "@/data/td/ThingTD";
-import TTable, {ITableCol} from "@/components/TTable.vue";
+import {TDActionAffordance, ThingTD} from "@/data/thing/ThingTD";
+import TSimpleTable, { ISimpleTableColumn } from "@/components/TSimpleTable.vue";
+import { ConsumedThing } from "@/data/thing/ConsumedThing";
 
-const props= defineProps<{td:ThingTD}>()
+const props= defineProps<{
+  cThing: ConsumedThing
+  }>()
 
 // columns to display action
-const actionColumns = <Array<ITableCol>>[
-  {name: "title", label: "Action", field:"title", align:"left",
-    sortable:true},
-  {name: "description", label: "Description", field:"description", align:"left"
+const actionColumns = <Array<ISimpleTableColumn>>[
+  {title: "Action", field:"title", align:"left", sortable:true},
+  // {title: "Description", field:"description", align:"left"
+  // },
+  {title: "Input", field:"input.title", align:"left"
   },
+  // {title: "Data type", field:"input.type", align:"left"
+  // },
 ]
 
 </script>
@@ -19,10 +25,11 @@ const actionColumns = <Array<ITableCol>>[
 
 <template>
 
-  <TTable row-key="id"
+  <TSimpleTable row-key="id"
+          dense
           :columns="actionColumns"
-          :rows="ThingTD.GetThingActions(props.td)"
-          no-data-label="No actions available"
+          :rows="ThingTD.GetThingActions(props.cThing.td)"
+          noDataLabel="This Thing does not accept any actions"
   />
 
 </template>

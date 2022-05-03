@@ -2,35 +2,37 @@
 
 import {QCard, QCardSection} from "quasar";
 import {DashboardTileConfig, IDashboardTileItem} from "@/data/dashboard/DashboardStore";
-import {ThingStore} from "@/data/td/ThingStore";
-import {TDProperty} from "@/data/td/ThingTD";
+// import {ThingStore} from "@/data/thing/ThingStore";
+import {TDPropertyAffordance} from "@/data/thing/ThingTD";
 import { ref } from "vue";
 import TileItemsTable from "./TileItemsTable.vue";
+import { ConsumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
 
 const props= defineProps<{
   tile:DashboardTileConfig
-  thingStore: ThingStore
+  // thingStore: ThingStore
+  cThingFactory: ConsumedThingFactory
 }>()
 
 interface IDisplayItem {
   label: string
-  property?: TDProperty
+  property?: TDPropertyAffordance
 }
 
 /**
  * Get array of thing attributes to display on the tile
  * This returns an array of items: [{thingID, thingAttr}]
  */
-const getThingsProperties = (items:IDashboardTileItem[]): IDisplayItem[] => {
-  let res = new Array<IDisplayItem>()
-  items.forEach( (item: IDashboardTileItem) => {
-    let td =props.thingStore.GetThingTDById(item.thingID)
-    let tdProp:TDProperty|undefined = td?.properties[item.propertyID]
-    let di:IDisplayItem = {label: item.propertyID, property:tdProp}
-    res.push(di)
-  })
-  return res
-}
+// const getThingsProperties = (items:IDashboardTileItem[]): IDisplayItem[] => {
+//   let res = new Array<IDisplayItem>()
+//   items.forEach( (item: IDashboardTileItem) => {
+//     let td =props.thingStore.getThingTDById(item.thingID)
+//     let tdProp:TDPropertyAffordance|undefined = td?.properties[item.propertyID]
+//     let di:IDisplayItem = {label: item.propertyID, property:tdProp}
+//     res.push(di)
+//   })
+//   return res
+// }
 
 /**
  * Lookup the property value of a tile item 
@@ -39,14 +41,15 @@ const getThingPropValue = (item:IDashboardTileItem):string => {
   if (!item) {
     return "Missing value"
   }
-  let thing = props.thingStore.GetThingTDById(item.thingID)
-  let tdProp = thing?.properties[item.propertyID]
-  if (!tdProp) {
+  let cThing = props.cThingFactory.consumeWithID(item.thingID)
+  let propIO = cThing?.properties.get(item.propertyID)
+  let tdProp = cThing?.td.properties[item.propertyID]
+  if (!tdProp || !propIO) {
     // Thing info not available
     // return "Property '"+item.propertyID+"' not found"
     return "N/A"
   }
-  let valueStr = tdProp.value + " " + (tdProp.unit ? tdProp.unit:"")
+  let valueStr = propIO.value + " " + (tdProp.unit ? tdProp.unit:"")
   return valueStr
 }
 
@@ -61,7 +64,7 @@ const item0 = ref(props.tile?.items?.[0])
   >
     <TileItemsTable
         :tileItems="props.tile?.items"
-        :thingStore="props.thingStore"
+        :cThingFactory="props.cThingFactory"
         grow
         flat dense
         noBorder noHeader

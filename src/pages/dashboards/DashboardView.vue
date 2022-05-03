@@ -16,13 +16,12 @@
 import {nextTick, onMounted, reactive, ref, watch} from "vue";
 import {GridLayout, GridItem} from 'vue3-grid-layout'
 import { useQuasar } from "quasar";
-import dashStore, {DashboardDefinition, DashboardTileConfig } from '@/data/dashboard/DashboardStore'
-import thingStore from '@/data/td/ThingStore'
-import appState from '@/data/AppState'
+import {dashboardStore, DashboardDefinition, DashboardTileConfig } from '@/data/dashboard/DashboardStore'
+import {appState} from '@/data/AppState'
 import DashboardTile from "./DashboardTile.vue";
 import TButton from "@/components/TButton.vue";
 import EditTileDialog from "./EditTileDialog.vue";
-
+import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
 
 export interface ILayoutItem {
   i: string,
@@ -47,13 +46,13 @@ const gridLayout = ref()
 
 
 const data = reactive({
-  dashboard: dashStore.GetDashboardByName(props.dashboardName) ,
+  dashboard: dashboardStore.getDashboardByName(props.dashboardName) ,
   currentLayout:  Array<ILayoutItem>(),
 })
 
 watch(()=>props.dashboardName, ()=>{
   console.log("DashboardView.watch(dashboardName)")
-  data.dashboard = dashStore.GetDashboardByName(props.dashboardName) 
+  data.dashboard = dashboardStore.getDashboardByName(props.dashboardName) 
   // this will trigger the watch on data.dashboard
   // updateDashboard(data.dashboard)
 })
@@ -71,7 +70,7 @@ watch( ()=>data.dashboard,
 
 onMounted(()=>{
   console.log("DashboardView.onMounted")
-  data.dashboard = dashStore.GetDashboardByName(props.dashboardName)
+  data.dashboard = dashboardStore.getDashboardByName(props.dashboardName)
   updateDashboardLayout(data.dashboard)
 })
 
@@ -133,7 +132,7 @@ const handleAddTile = (dashboard:DashboardDefinition|undefined) => {
       tile: new DashboardTileConfig(),
     },
   }).onOk((newTile:DashboardTileConfig)=> {
-    dashStore.AddTile(dashboard, newTile)
+    dashboardStore.addTile(dashboard, newTile)
     $q.notify("A new Tile has been added to Dashboard "+dashboard.name)
   })
 }
@@ -189,10 +188,10 @@ const Save = () => {
     newDash.layouts = gridLayout.value.layouts
     
     console.info("DashboardView.Save: saving layouts", newDash.layouts)
-    dashStore.UpdateDashboard(newDash)
+    dashboardStore.updateDashboard(newDash)
     // As the dashboard is replaced in the store, changes to the existing 
     // dashboard won't be detected. Manual update instead.
-    data.dashboard = dashStore.GetDashboardByName(props.dashboardName)
+    data.dashboard = dashboardStore.getDashboardByName(props.dashboardName)
   }
 }
 
@@ -251,8 +250,8 @@ const updateDashboardLayout = (dashboard:DashboardDefinition|undefined) => {
                 :responsiveLayouts="data.dashboard.layouts"
                 :row-height="40"
                 :verticalCompact="true"
-        :is-draggable="appState.State().editMode"
-        :is-resizable="appState.State().editMode"
+        :is-draggable="appState.state.editMode"
+        :is-resizable="appState.state.editMode"
         :responsive="true"
         :useCSSTransforms="true"
         @breakpoint-changed="handleBreakpointChange"
@@ -272,9 +271,9 @@ const updateDashboardLayout = (dashboard:DashboardDefinition|undefined) => {
        <DashboardTile 
           :tile="data.dashboard?.tiles?.[item.i]"
           :dashboard="data.dashboard"
-          :thingStore="thingStore"
-          :dashStore="dashStore"
-          :editMode="appState.State().editMode"
+          :cThingFactory="consumedThingFactory"
+          :dashStore="dashboardStore"
+          :editMode="appState.state.editMode"
           />
       </grid-item> 
     </GridLayout>

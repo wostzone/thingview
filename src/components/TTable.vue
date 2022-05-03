@@ -62,10 +62,9 @@ const pagination = ref({
       virtual-scroll
   >
    <!-- export the slots -->
-    <!-- <template v-for="(index, name:string|number) in $slots" v-slot:[name]="props"> -->
-    <template v-for="(index, name) in $slots" v-slot:[name]="props">
-      <!-- pass all props to the named slot -->
-      <slot :name="name" v-bind="props" > </slot>
+    <template v-for="(index, name) in $slots" v-slot:[name]="slotProps">
+      <!-- v-bind passes all props to the named slot -->
+      <slot :name="name" v-bind="slotProps" > </slot>
     </template>
    
    <!-- setheader -->

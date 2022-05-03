@@ -7,10 +7,12 @@ import {matAdd, matAssignmentInd} from "@quasar/extras/material-icons";
 
 import EditAccountDialog from "./EditAccountDialog.vue";
 import AccountsTable from './AccountsTable.vue'
-import appState from '@/data/AppState'
-import accountStore, {AccountRecord} from '@/data/accounts/AccountStore'
-import connectionManager from "@/data/accounts/ConnectionManager";
+import {appState} from '@/data/AppState'
+import {accountStore, AccountRecord} from '@/data/accounts/AccountStore'
+
 import router from '@/router'
+import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
+import { thingStore } from "@/data/thing/ThingStore";
 
 const data = reactive({
   selectedRow : AccountRecord,
@@ -26,7 +28,10 @@ const $q = useQuasar()
  * Login to the account with the given password
  */
 const handleLogin = (account:AccountRecord, password:string) => {
-  connectionManager.Connect(account)
+  consumedThingFactory.authenticate(account, password)
+  .then(()=>{
+    consumedThingFactory.connect(account, thingStore)
+  })
 }
 
 const handleStartAdd = () => {
@@ -61,7 +66,7 @@ const handleStartDelete = (record: AccountRecord) => {
     message:"Please confirm delete account: '"+record.name+"'",
     ok:true, cancel:true,
   }).onOk(payload => {
-    accountStore.Remove(record.id)
+    accountStore.remove(record.id)
   })
 }
 
@@ -69,11 +74,14 @@ const handleStartDelete = (record: AccountRecord) => {
 const handleToggleEnabled = (record: AccountRecord) => {
   console.log("AccountsView.handleOnToggleEnabled")
   if (record.enabled) {
-    accountStore.SetEnabled(record.id, false)
-    connectionManager.Disconnect(record.id)
+    accountStore.setEnabled(record.id, false)
+    consumedThingFactory.disconnect()
   } else {
-    accountStore.SetEnabled(record.id, true)
-    connectionManager.Connect(record)
+    accountStore.setEnabled(record.id, true)
+    consumedThingFactory.connect(record, thingStore)
+    .catch((err:any)=>{
+      console.info("handleToggleEnabled. Error: %s", err)
+    })
   }
 }
 
@@ -96,7 +104,7 @@ const handleToggleEnabled = (record: AccountRecord) => {
           <QToolbar>
             <QIcon :name="matAssignmentInd" size="28px"/>
             <QToolbarTitle shrink>Hub Accounts</QToolbarTitle>
-            <QBtn v-if="appState.State().editMode"
+            <QBtn v-if="appState.state.editMode"
                 round  size="sm"
                 color="primary" 
                 :icon="matAdd"
@@ -108,8 +116,8 @@ const handleToggleEnabled = (record: AccountRecord) => {
       <AccountsTable :accounts="accountStore.accounts"
                      title="Hub Accounts"
                      style="width: 100%"
-                     :editMode="appState.State().editMode"
-                     :cm="connectionManager"
+                     :editMode="appState.state.editMode"
+                     :connectionStatus="consumedThingFactory.connectionStatus"
                      @onEdit="handleStartEdit"
                      @onDelete="handleStartDelete"
                      @onToggleEnabled="handleToggleEnabled"

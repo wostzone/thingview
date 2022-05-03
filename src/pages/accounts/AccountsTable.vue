@@ -6,17 +6,18 @@ import {ref} from 'vue'
 import {AccountRecord} from "@/data/accounts/AccountStore";
 import {QBtn, QTooltip, QTable, QTd, QToggle} from "quasar";
 import {matDelete, matEdit, matLinkOff, matLink} from "@quasar/extras/material-icons";
-import {ConnectionManager, IConnectionStatus} from "@/data/accounts/ConnectionManager";
+// import {ConnectionManager, IConnectionStatus} from "@/data/accounts/ConnectionManager";
 import TConnectionStatus from "@/components/TConnectionStatus.vue";
 import TTable from '@/components/TTable.vue'
+import { IConnectionStatus } from '@/data/accounts/IConnectionStatus';
 
 
 // Accounts table API
 interface IAccountsTable {
   // Collection of accounts to display
   accounts: ReadonlyArray<AccountRecord>
-  // connection manager for presenting the connection state of an account
-  cm: ConnectionManager
+  // connection state for presenting the connection state of an account
+  connectionStatus: IConnectionStatus
   // Allow editing of accounts
   editMode?: boolean
   // optional title to display above the table
@@ -39,12 +40,6 @@ interface ICol {
   align?: "left"| "right" | "center" | undefined
   style?: string
   format?: (val:any, row:any)=>any
-}
-
-// Get the account's reactive connection status
-const connectState = (account: AccountRecord): IConnectionStatus => {
-  let state = props.cm.GetConnectionStatus(account)
-  return state
 }
 
 // get reactive edit mode
@@ -121,7 +116,7 @@ const visibleColumns = ref([ 'edit', 'name', 'address', 'enabled', 'connected', 
     <!-- Connection status -->
     <template v-slot:body-cell-status="propz" >
       <QTd>
-        <TConnectionStatus :value="connectState(propz.row as AccountRecord)" withText/>
+        <TConnectionStatus :value="props.connectionStatus" withText/>
       </QTd>
     </template>
 

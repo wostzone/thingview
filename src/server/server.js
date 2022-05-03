@@ -1,4 +1,4 @@
-// thingview.js
+// server.js
 // Launch express server on port 8443 to present the WoST thingview dashboard application
 // Includes proxy for access to services to avoid the need for cross site scripting.
 //

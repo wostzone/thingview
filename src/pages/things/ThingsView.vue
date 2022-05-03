@@ -1,23 +1,23 @@
 <script lang="ts" setup>
+/**
+ * Display the list of known Things
+ */
 
 // import {useQuasar} from "quasar"
 import {reactive, ref} from 'vue'
 import {QCard, QCardSection, QIcon} from "quasar"
 import {matLensBlur} from "@quasar/extras/material-icons"
-
-import ds from "@/data/td/ThingStore"
-// import ThingsTable from "./ThingsTable.vue"
-import { ThingTD } from "@/data/td/ThingTD"
+import { thingStore } from '@/data/thing/ThingStore'
+import { ThingTD } from "@/data/thing/ThingTD"
 import ThingsTable2 from "./ThingsTable2.vue"
 // import ThingsTable from "./ThingsTable.vue"
 
-// const things = (ds.all: TDCollection):Array<ThingTD>  {
-//     return Array.from(ds.index.values())
-// }
+
 // const $q = useQuasar()
 
 
 const tdToShow = ref(new ThingTD())
+
 const data =reactive({
   showDetails: false,
   tdToShow: new ThingTD()
@@ -29,6 +29,8 @@ const handleViewDetails = (row:ThingTD) => {
   data.tdToShow = row
   data.showDetails = !data.showDetails
 }
+
+// const getThingsToView()
 
 </script>
 
@@ -55,7 +57,7 @@ const handleViewDetails = (row:ThingTD) => {
                     @on-view-details="handleViewDetails"
       >
       </ThingsTable> -->
-      <ThingsTable2  :things="ds.all" dense
+      <ThingsTable2  :things="thingStore.all" dense
                     title="Hub Things"
                     style="width: 100%"
                     @on-view-details="handleViewDetails"

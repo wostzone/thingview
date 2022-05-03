@@ -35,11 +35,11 @@ interface LoginRequestMessage {
 }
 
 // Client for connecting to a Hub authentication service
-export default class AuthClient {
+export class AuthClient {
   private address: string = ""
   private port: number = DefaultPort
   private accountID: string = ""
-  private _accessToken: string | null = null
+  private _accessToken: string = ""
   // private _refreshToken: string = ""
   private caCert: string = "" // in PEM format
   private loginID: string = ""
@@ -57,7 +57,10 @@ export default class AuthClient {
       this.port = port
     }
     this.sessionKey = 'accessToken-' + accountID
-    this._accessToken = sessionStorage.getItem(this.sessionKey)
+    let sessionInfo = sessionStorage.getItem(this.sessionKey)
+    if (sessionInfo) {
+      this._accessToken = sessionInfo
+    }
 
     const options = {
       // key: fs.readFileSync("/srv/www/keys/my-site-key.pem"),
@@ -91,8 +94,8 @@ export default class AuthClient {
     return response
   }
 
-  // Return the access token for the hub or null if it doesn't exist
-  public get accessToken(): string | null {
+  // Return the access token for the hub or "" if it doesn't exist
+  public get accessToken(): string {
     return this._accessToken
   }
 
@@ -112,7 +115,9 @@ export default class AuthClient {
   // @param rememberMe stores the resulting refresh token in a secure cookie for use with Refresh()
   // This returns a promise that completes on success with the access token, or fails if the
   // credentials are invalid or the auth service cannot be reached.
-  public async AuthenticateWithLoginID(loginID: string, password: string, rememberMe: boolean): Promise<string> {
+  public async AuthenticateWithLoginID(
+    loginID: string, password: string, rememberMe: boolean): Promise<string> {
+
     this.loginID = loginID
     // directly login to the auth service. This is an issue with cross-scripting attacks 
     // let url = "https://" + this.address + ":" + this.port.toString() + DefaultJWTLoginPath

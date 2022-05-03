@@ -8,9 +8,10 @@ import {
 import { h } from 'vue'
 // import AccountsView from '@/pages/accounts/AccountsView.vue'
 import DialogRouterView from './DialogRouterView.vue'
-import {ThingTD} from "@/data/td/ThingTD";
-import dirStore from '@/data/td/ThingStore'
-import accountStore, {AccountRecord} from "@/data/accounts/AccountStore";
+// import { ThingTD } from "@/data/thing/ThingTD";
+// import thingStore from '@/data/thing/ThingStore'
+import { accountStore, AccountRecord } from "@/data/accounts/AccountStore";
+// import { ConsumedThing } from "@/data/thing/ConsumedThing";
 // import dashboardStore from "@/data/dashboard/DashboardStore";
 
 // Router constants shared between router and navigation components
@@ -22,7 +23,7 @@ export const ThingsRouteName = "things"
 
 // Get the account of the given ID or undefined if the ID is not found
 const getAccount = (id:string): AccountRecord|undefined => {
-  let account = accountStore.GetAccountById(id)
+  let account = accountStore.getAccountById(id)
   if (!account) {
     console.log("Router getAccount id: ", id, 'is new.')
     return
@@ -30,16 +31,18 @@ const getAccount = (id:string): AccountRecord|undefined => {
   console.log("Router getAccount id: ", id, 'found.')
   return account
 }
-// Get the thing of the given ID or an empty TD if the ID is not found
-const getTD = (id:string): ThingTD => {
-  let td = dirStore.GetThingTDById(id)
-  if (!td) {
-    console.log("Router getTD id: ", id, 'is new.')
-    return new ThingTD()
-  }
-  console.log("Router getTD id: ", id, 'found!')
-  return td
-}
+
+// // Get the thing of the given ID or an empty TD if the ID is not found
+// const getConsumedThing = (id: string): ConsumedThing | undefined => {
+//   let td = thingStore.GetThingTDById(id)
+//   if (!td) {
+//     console.log("Router getTD id: ", id, 'is unknown.')
+//     return undefined
+//   }
+//   console.log("Router getTD id: ", id, 'found!')
+//   let cThing = thingStore.consume(td)
+//   return cThing
+// }
 // Get the first dashboard name
 // const getFirstDashboard = (): string => {
 //   if (dashboardStore.dashboards.length > 0) {
@@ -126,7 +129,8 @@ const routes: Array<RouteRecordRaw> = [
         props: {
           dialog: (route:any) => ({
             returnTo: {name:ThingsRouteName},
-            td: getTD(route.params.thingID)
+            // cThing: getConsumedThing(route.params.thingID)
+            thingID: route.params.thingID
           }),
         }
       }

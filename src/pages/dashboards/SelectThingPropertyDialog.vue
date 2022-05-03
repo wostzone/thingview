@@ -4,9 +4,9 @@ import { reactive } from 'vue';
 import { useDialogPluginComponent, QCard, QInput, QList, QExpansionItem } from 'quasar';
 
 import TDialog from '@/components/TDialog.vue';
-import { TDProperty, ThingTD } from '@/data/td/ThingTD';
+import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import ThingPropertiesTable from '../things/ThingPropertiesTable.vue';
-
+import { consumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
 // inject handlers
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
@@ -18,6 +18,7 @@ const props = defineProps<{
    * The things to select from
    */
   things: ThingTD[]
+
 }>()
 
 const emits = defineEmits( [
@@ -41,7 +42,7 @@ const getAllThings = ():Array<ThingTD> => {
 }
 
 
-const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDProperty)=>{
+const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDPropertyAffordance)=>{
   onDialogOK({td:td, thingID:td.id, propID:propID, tdProp:tdProp})
 }
 
@@ -73,7 +74,7 @@ const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDProperty)
             <p style="font-size: small; font-style: italic;">ID: {{td.id}}</p>
             
             <ThingPropertiesTable 
-              :td="td"
+              :cThing="consumedThingFactory.consume(td)"
               enable-prop-select
               @onThingPropertySelect="handleThingPropertySelect"
             />

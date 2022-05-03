@@ -2,25 +2,29 @@
 
 import {ref} from 'vue'
 import { date, QCard, QCardSection, QField, QForm, QTab, QTabs, QTabPanel, QTabPanels } from 'quasar';
-const {formatDate}= date
 
 import {matSettings, matSettingsRemote, matDescription, matDirectionsRun} from '@quasar/extras/material-icons'
 
 
-import {ThingTD, TDProperty, TDAction, TDEvent} from '@/data/td/ThingTD';
+import {ThingTD, TDPropertyAffordance, TDActionAffordance, TDEventAffordance} from '@/data/thing/ThingTD';
 
 import ThingEvents from './ThingEvents.vue'
 import ThingActions from "@/pages/things/ThingActions.vue";
 import ThingPropertiesTable from "@/pages/things/ThingPropertiesTable.vue";
 import ThingConfiguration from "@/pages/things/ThingConfiguration.vue";
+import { ConsumedThing } from '@/data/thing/ConsumedThing';
 
-// Thing Details View
+
+const {formatDate}= date
+
+// Consumed Thing Details View
 const props = defineProps<{
-  td:ThingTD,
-  height?:string,
+  cThing: ConsumedThing,
+  height?: string,
 }>()
 
 const selectedTab = ref('attr')
+
 
 // Convert iso9601 date format to text representation 
 const getDateText = (iso:string): string => {
@@ -35,11 +39,11 @@ const getDateText = (iso:string): string => {
 
   <QForm  class='row q-pb-sm'>
     <QField label="Thing ID" stack-label dense class="q-pl-md">
-      {{props.td.id}}
+      {{props.cThing.id}}
     </QField>
     <QField  label="Created" stack-label dense class="q-pl-md">
       <!-- {{props.td.created}}  -->
-      {{getDateText(props.td.created)}}
+      {{getDateText(props.cThing.td.created)}}
     </QField>
   </QForm>
 
@@ -52,19 +56,23 @@ const getDateText = (iso:string): string => {
 
     <QTabPanels v-model="selectedTab">
       <QTabPanel name="attr"  class="q-pa-xs">
-        <ThingPropertiesTable :td="props.td"/>
+        <ThingPropertiesTable 
+          :cThing="props.cThing"
+          :propNames="ThingTD.GetAttributeNames(props.cThing.td)"
+          :noDataLabel='"Thing "+props.cThing.td.description+"\" has no properties"'
+        /> 
       </QTabPanel>
 
       <QTabPanel name="config" class="q-pa-xs">
-        <ThingConfiguration :td="props.td"/>
+        <ThingConfiguration :cThing="props.cThing"/>
       </QTabPanel>
 
       <QTabPanel name="events" class="q-pa-xs">
-        <ThingEvents :td="props.td"/>
+        <ThingEvents :cThing="props.cThing"/>
       </QTabPanel>
 
       <QTabPanel name="actions" class="q-pa-xs">
-        <ThingActions :td="props.td"/>
+        <ThingActions :cThing="props.cThing"/>
       </QTabPanel>
 
     </QTabPanels>
