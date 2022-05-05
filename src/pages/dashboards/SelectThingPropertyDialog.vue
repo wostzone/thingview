@@ -7,6 +7,8 @@ import TDialog from '@/components/TDialog.vue';
 import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import ThingPropertiesTable from '../things/ThingPropertiesTable.vue';
 import { consumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
+import { stringify } from 'querystring';
+import InteractionOutput from '@/data/thing/InteractionOutput';
 // inject handlers
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
@@ -38,6 +40,26 @@ const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDPropertyA
   onDialogOK({td:td, thingID:td.id, propID:propID, tdProp:tdProp})
 }
 
+/** Group properties of things into their type
+ * Returns a map of property types and the list of properties for display:
+ * [
+ *   { property type: [
+ *     {propName:string, thingID:string, propAffordance:PropertyAffordance}
+ *   ]}
+ * ]
+ */
+// const getPropertiesByType = (things:ThingTD[]): string[] => {
+//   let typeNames: {[key: string]: any} = {}
+
+//   things.forEach((td:ThingTD)=>{
+//     Object.entries(td.properties).forEach(([propName, propAffordance])=>{
+//       typeNames[propAffordance.type] = propName
+//     })
+//   })
+//   return Object.keys(typeNames).sort()
+// }
+
+
 
 </script>
 
@@ -52,7 +74,7 @@ const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDPropertyA
       <!-- Search to reduce the amount of Things to select from -->
       <QInput label="Search" v-model="data.searchInput"/>
       <QList>
-        <!-- Accordion to select a Thing and view its properties -->
+        <!-- Accordion to select a Thing and view its properties. TODO: show by property type (temperature, humidity...) -->
         <QExpansionItem v-for="td in props.things"
           :label="td.publisher + (td.description ? (' - ' + td.description) : '')" 
           :label-lines="1"

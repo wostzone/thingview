@@ -36,7 +36,7 @@ import { DateTime } from 'luxon';
 // }
 
 // --- Main function
-export function timeAgo(datim: DateTime): string {
+export function timeAgo(datim?: DateTime): string {
   let ago: string = ""
   if (!datim) {
     return "";
@@ -50,12 +50,10 @@ export function timeAgo(datim: DateTime): string {
     ago = `${delta.hours} hours ago`
   } else if (delta.hours > 0) {
     ago = `${delta.hours} hour ago`
-  } else if (delta.minutes > 1) {
-    ago = `${delta.minutes} minutes ago`
-  } else if (delta.minutes > 0) {
+  } else if (delta.minutes == 1) {
     ago = `${delta.minutes} minute ago`
   } else {
-    ago = `${delta.seconds.toFixed()} seconds ago`
+    ago = `${delta.minutes} minutes ago`
   }
   return ago
 

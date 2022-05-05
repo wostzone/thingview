@@ -2,7 +2,7 @@
 
 import { h } from 'vue';
 import { DateTime } from 'luxon';
-import {timeAgo} from '@/data/TimeAgo'
+import {timeAgo} from '@/data/timeAgo'
 import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import TSimpleTable, { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';

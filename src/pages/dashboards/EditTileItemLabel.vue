@@ -67,15 +67,25 @@ const handleSubmit = () =>{
     <QForm @submit="handleSubmit"
            ref="formRef"
            >
-      <QInput v-model="editItem.label"
+      <QInput input-class="qinput"
+        v-model="editItem.label"
               autofocus
               :placeholder="defaultLabel"
               id="NewLabel" type="text"
               label="New Label"
               stack-label
+              hide-bottom-space
       />
 
       </QForm>
 
   </TDialog>
 </template>
+
+<style>
+/* placeholders should no look like input text */
+.qinput::placeholder {
+  font-style: italic;
+  color:#3d3e4180 !important
+}
+</style>

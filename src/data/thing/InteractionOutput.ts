@@ -37,4 +37,18 @@ export default class InteractionOutput extends Object {
       this.updated = DateTime.now()
     }
   }
+
+  /** Get updated timestamp in short locale text format: day. month hh:mm
+   */
+  getUpdatedShortText(): string {
+    // https://stackoverflow.com/questions/2388115/get-locale-short-date-format-using-javascript
+    let shortText = this.updated.toLocaleString({
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "numeric",
+      minute: "numeric"
+    })
+    return shortText
+  }
 }

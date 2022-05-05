@@ -69,12 +69,18 @@ export class DirectoryClient {
     })
     if (!resp) {
       let err = new Error("DirectoryClient.getBatch: Missing content for URL: " + url)
+      console.warn(err)
+      throw (err)
+    } else if (resp.status >= 400) {
+      let err = new Error(`DirectoryClient.getBatch: Error code '{resp.status}' ({resp.statusText}) for URL: {url}`)
+      console.warn(err)
       throw (err)
     }
     let respText = await resp.text()
     let jsonResp = JSON.parse(respText)
     if (!jsonResp) {
       let err = new Error("DirectoryClient.getBatch: response is not json for URL: " + url)
+      console.warn(err)
       throw (err)
     }
     console.log("DirectoryClient.getBatch: Response content=", jsonResp)
@@ -156,33 +162,6 @@ export class DirectoryClient {
         throw (reason)
       })
   }
-
-  // Load the property values of all things and update the value store.
-  // This only needs to be done during startup. MQTT subscription keeps the values up to date.
-  // async LoadAllValues(accessToken: string) {
-  //   // TODO: break list into chunks
-  //   let ids = this.thingStore.allIDs.join(',')
-  //   let url = "https://" + this.hostPort + PATH_VALUES + "?" + QPARAM_THINGS + ids
-  //   console.log("DirectoryClient.LoadAllValues: from '%s'", url)
-
-  //   await this.GetBatch(url, 0, MaxLimit, accessToken)
-  //     .then((values: any) => {
-  //       console.log("DirectoryClient.LoadAllValues: received values from url %s", url)
-
-  //       Object.entries(values).forEach(([thingID, props]) => {
-  //         let thingProps = props as Object
-  //         let td = this.thingStore.getThingTDById(thingID)
-  //         if (td) {
-  //           let ct = this.thingStore.consume(td)
-  //           Object.entries(thingProps).forEach(([propName, val]) => {
-  //             let updated = DateTime.fromISO(val.updated)
-  //             ct.updatePropertyValue(propName, val.value, updated)
-  //           })
-  //         }
-  //       })
-
-  //     })
-  // }
 
   // read the property values for use in a Consumed Thing
   // This only needs to be done during startup. MQTT subscription keeps the values up to date.

@@ -1,29 +1,28 @@
 <script lang="ts" setup>
 
-import {h, VNode, VNodeArrayChildren} from 'vue'
+import {h, VNode} from 'vue'
 import { get as _get} from 'lodash-es'
 import { matRemove, matEdit } from '@quasar/extras/material-icons';
 import { QTooltip } from 'quasar';
 
 import TButton from '@/components/TButton.vue'
 import TSimpleTable from '../../components/TSimpleTable.vue';
-import TText from '@/components/TText.vue'
+import PropValueInfoPopup from './PropValueInfoPopup.vue';
 
 import { IDashboardTileItem } from '@/data/dashboard/DashboardStore';
 // import { ThingStore } from '@/data/thing/ThingStore';
-import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
-import { PropNameDeviceType, PropNameName } from '@/data/thing/Vocabulary';
+import { PropNameName } from '@/data/thing/Vocabulary';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import { ConsumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
 import InteractionOutput from '@/data/thing/InteractionOutput';
+import { timeAgo } from '@/data/timeAgo';
+import { DateTime } from 'luxon';
 
 
 /**
- * This component shows a table with the items name and value from a dashboard tile
+ * Table with tile item name and value
  */
-
-
 const props = defineProps<{
   /**
    * Reduce padding to compact layout
@@ -136,8 +135,8 @@ const getThingPropValue = (thingItem:IThingTileItem):string => {
  * Property name edit button is shown in edit mode and triggers a name edit dialog.
  */
 const getTileItemLabel = (thingItem:IThingTileItem):VNode => {
-  // 1: The item defined label takes precedence
-  let propName = thingItem.tileItem.label
+  // The configured label takes precedence
+  let propLabel = thingItem.tileItem.label
   let defaultLabel = ""
 
   if (thingItem.propIO?.schema) {
@@ -149,21 +148,21 @@ const getTileItemLabel = (thingItem:IThingTileItem):VNode => {
       defaultLabel = nameProp.value + " " + defaultLabel
     }
   }
-  if (propName == "") {
-    propName = defaultLabel
+  if (!propLabel) {
+    propLabel = defaultLabel
   }
+  // console.log("--- tileitemlabel=",propLabel)
 
-  // note: the following tooltip construct is horrid. Is there a more readable way?
   let comp = h('span', 
               {style: 'width:"100%"; display:flex'},
-              [ propName,
+              [ propLabel,
                 props.editMode ? 
-                h(TButton, {
-                  icon:matEdit, round:true, dense:true, flat:true, height:'10px', 
-                  style: "min-width: 1.5em; position: absolute; right:0",
-                  tooltip:"Edit name",
-                  onClick: ()=>handleEditLabel(thingItem.tileItem, defaultLabel)
-                }):null,
+                  h(TButton, {
+                    icon:matEdit, round:true, dense:true, flat:true, height:'10px', 
+                    style: "min-width: 1.5em; position: absolute; right:0",
+                    tooltip:"Edit name",
+                    onClick: ()=>handleEditLabel(thingItem.tileItem, defaultLabel)
+                  }):null,
               ]
   )
 
@@ -174,19 +173,14 @@ const getTileItemLabel = (thingItem:IThingTileItem):VNode => {
  * Return a tooltip of the tile item that includes more information
  *  
  */
-const getTileItemTooltip = (thingItem:IThingTileItem):VNode => {
-  // 1: The item defined label takes precedence
-  // tooltip text is the Thing's description - property ID
-  let tooltip1 = thingItem.cThing?.td.description + "; " + thingItem.tileItem.propertyID
-  tooltip1 += " (" + thingItem.cThing?.td.deviceType + ")"
-  let tooltip2 = "Thing ID: " + thingItem.cThing?.id
-
-  // note: the following tooltip construct is horrid. Is there a more readable way?
+const getTileItemTooltip = (thingItem:IThingTileItem, now:DateTime):VNode => {
   let comp = h(QTooltip, 
               { style: 'font-size:inherit' },
-              ()=>[h('p',tooltip1), h('p',tooltip2)]
+                ()=>h(PropValueInfoPopup, {
+                  cThing: thingItem.cThing, 
+                  propName:thingItem.tileItem.propertyID
+                  }),
   )
-  
   return comp
 }
 
@@ -234,7 +228,7 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
       component: (row:IThingTileItem)=>h('span',
          {'style': 'width:"100%"'},
          [getTileItemLabel(row),
-         getTileItemTooltip(row)
+        //  getTileItemTooltip(row, DateTime.now())
           ]
       ),
       align: 'left'
@@ -245,7 +239,9 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
       // width: "50%",
       // maxWidth: "0",
       component: (row:IThingTileItem)=>h('span', {}, 
-        { default: ()=>getThingPropValue(row) }
+        [getThingPropValue(row),
+         getTileItemTooltip(row, DateTime.now())
+         ]
       )
     }
   ]
