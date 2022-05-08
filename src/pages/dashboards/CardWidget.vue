@@ -1,20 +1,16 @@
 <script lang="ts" setup>
 
-import {QCard, QCardSection, QLinearProgress, QBadge} from "quasar";
+import {QLinearProgress, QBadge} from "quasar";
 import {DashboardTileConfig, IDashboardTileItem} from "@/data/dashboard/DashboardStore";
-// import {ThingStore} from "@/data/thing/ThingStore";
 import {TDPropertyAffordance} from "@/data/thing/ThingTD";
 import { ref } from "vue";
 import TileItemsTable from "./TileItemsTable.vue";
-import { ConsumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
+import { ThingFactory } from "@/data/protocolbinding/ThingFactory";
 import { DateTime } from "luxon";
-import { time } from "console";
-import PropValueInfoPopup from "./PropValueInfoPopup.vue";
 
 const props= defineProps<{
   tile:DashboardTileConfig
-  // thingStore: ThingStore
-  cThingFactory: ConsumedThingFactory
+  thingFactory: ThingFactory
 }>()
 
 interface IDisplayItem {
@@ -44,7 +40,7 @@ const getThingPropValue = (item:IDashboardTileItem):string => {
   if (!item) {
     return "Missing value"
   }
-  let cThing = props.cThingFactory.consumeWithID(item.thingID)
+  let cThing = props.thingFactory.consumeWithID(item.thingID)
   let propIO = cThing?.properties.get(item.propertyID)
   let tdProp = cThing?.td.properties[item.propertyID]
   if (!tdProp || !propIO) {
@@ -63,7 +59,7 @@ const getPropAge = (item:IDashboardTileItem):string => {
   if (!item ) {
     return "n/a"
   }
-  let cThing = props.cThingFactory.consumeWithID(item.thingID)
+  let cThing = props.thingFactory.consumeWithID(item.thingID)
   let propIO = cThing?.properties.get(item.propertyID)
   if (!propIO) {
     // Thing info not available
@@ -81,7 +77,7 @@ const getAgeFractionOfDay = (item:IDashboardTileItem):number => {
   if (!item ) {
     return 0
   }
-  let cThing = props.cThingFactory.consumeWithID(item.thingID)
+  let cThing = props.thingFactory.consumeWithID(item.thingID)
   let propIO = cThing?.properties.get(item.propertyID)
   if (!propIO) {
     // Thing info not available
@@ -107,7 +103,7 @@ const item0 = ref(props.tile?.items?.[0])
   >
     <TileItemsTable
         :tileItems="props.tile?.items"
-        :cThingFactory="props.cThingFactory"
+        :thingFactory="props.thingFactory"
         grow
         flat dense
         noBorder noHeader

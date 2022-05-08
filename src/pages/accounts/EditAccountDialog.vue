@@ -4,8 +4,7 @@ import TDialog from "@/components/TDialog.vue";
 import {useDialogPluginComponent, QCardSection, QField, QForm, QInput, QSpace, QToggle} from "quasar";
 import {accountStore, AccountRecord} from "@/data/accounts/AccountStore";
 import {useRouter} from "vue-router";
-import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
-import { thingStore } from "@/data/thing/ThingStore";
+import { thingFactory } from "@/data/protocolbinding/ThingFactory";
 
 /**
  * View/Edit account details
@@ -70,19 +69,11 @@ const handleSubmit = () =>{
         accountStore.update(data.editRecord)
         // connectionManager.Connect(data.editRecord)
         if (data.editRecord.enabled && data.password) {
-          consumedThingFactory.authenticate(data.editRecord, data.password)
-          // re-authenticate
-          // connectionManager.Authenticate(data.editRecord, data.password)
-              .then(()=>{
-                // if authentication succeeds, connect to the default things store
-                consumedThingFactory.connect(
-                  data.editRecord, 
-                  thingStore)
-              })
+          thingFactory.connect(data.editRecord, data.password)
         } else if (!data.editRecord.enabled) {
           // this the active account got disabled, disconnect the factory
-          if (data.editRecord.id == consumedThingFactory.connectionStatus.account?.id) {
-            consumedThingFactory.disconnect()
+          if (data.editRecord.id == thingFactory.connectionStatus.account?.id) {
+            thingFactory.disconnect()
           }
         }
         emit('onSubmit', data.editRecord)

@@ -8,14 +8,13 @@ import router from '@/router'
 import {appState} from '@/data/AppState'
 import {accountStore, AccountRecord} from "@/data/accounts/AccountStore";
 import {dashboardStore} from '@/data/dashboard/DashboardStore'
-import { thingStore } from '@/data/thing/ThingStore';
-import {consumedThingFactory} from '@/data/protocolbinding/ConsumedThingFactory'
+import {thingFactory} from '@/data/protocolbinding/ThingFactory'
 const $q = useQuasar()
 
 
 /** Popup a login page on authentication failure  */
 const onAuthFailed = (account:AccountRecord, err:Error) => {
-  if (!consumedThingFactory.connectionStatus.authenticated) {
+  if (!thingFactory.connectionStatus.authenticated) {
     let newPath = "/accounts/"+account.id
     console.log("AppView.connectToHub: Navigating to account edit for account '%s': path=%s", account.name, newPath)
     router.push({name: "accounts.dialog", params: { accountID: account.id}})
@@ -26,13 +25,16 @@ const onAuthFailed = (account:AccountRecord, err:Error) => {
  * Connect the protocol factory for the first active account
  */
 const connectToHub = (accounts: ReadonlyArray<AccountRecord>) => {
-  consumedThingFactory.setAuthFailedHandler(onAuthFailed)
+  thingFactory.setAuthFailedHandler(onAuthFailed)
+
+  // tryout reactivity
+  // thingFactory = reactive(thingFactory)
 
 // TODO: support multiple accounts
   // connect to the first enabled account
   for (let account of accounts) {
     if (account.enabled) {
-      consumedThingFactory.connect(account, thingStore)
+      thingFactory.connect(account)
       .then(()=>{
         console.log("AppView.connectToHub: Connected to: ", account.name)
         $q.notify({
@@ -41,9 +43,9 @@ const connectToHub = (accounts: ReadonlyArray<AccountRecord>) => {
           message: 'Connected to '+account.name,
         })
       })
-      .catch((err:any)=>{
+      .catch((err:Error)=>{
         // If authentication failed then open the login view
-        console.warn("AppView.connectToHub: failed to connect to: %s, err='%s'", account.name, err)
+        console.warn("AppView.connectToHub: failed to connect to: %s, err='%s'", account.name, err.message)
         $q.notify({
           position: 'top',
           type: 'negative',
@@ -61,7 +63,6 @@ const connectToHub = (accounts: ReadonlyArray<AccountRecord>) => {
  */
 onMounted(()=>{
   appState.load()
-  thingStore.load()
   dashboardStore.load()
   accountStore.load()
   nextTick(()=>{
@@ -81,7 +82,7 @@ onMounted(()=>{
 <div class="appView">
   <AppHeader  :appState="appState"
               :dashStore="dashboardStore"
-              :connectionStatus="consumedThingFactory.connectionStatus"/>
+              :connectionStatus="thingFactory.connectionStatus"/>
   <router-view></router-view>
 </div>
 </template>

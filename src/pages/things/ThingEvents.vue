@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
-import {TDEventAffordance, ThingTD} from "@/data/thing/ThingTD";
-import TTable, {ITableCol} from "@/components/TTable.vue";
+import {ThingTD} from "@/data/thing/ThingTD";
 import { ISimpleTableColumn } from "@/components/TSimpleTable.vue";
 import TSimpleTable from "../../components/TSimpleTable.vue";
 import { ConsumedThing } from "@/data/thing/ConsumedThing";

@@ -63,7 +63,7 @@ export class ConsumedThing {
   // Hook to read thing property values by the protocol binding
   // This can be set to a protocol binding by the protocol factory
   // By default this throws an error
-  readPropertiesHook = async (ConsumedThing): Promise<Object | undefined> => { throw Error("Reading properties is not supported on this thing") }// = undefined
+  readPropertiesHook = async (cThing: ConsumedThing): Promise<Object | undefined> => { throw Error("Reading properties is not supported on this thing") }// = undefined
 
   // Create an instance of a ConsumedThing and attach to the protocol binding
   // if not protocol binding is provided the consumed thing can still be used

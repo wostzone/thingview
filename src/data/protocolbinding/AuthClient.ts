@@ -36,7 +36,7 @@ export class AuthClient {
   // @param accountID for callbacks and session storage
   // @param address of the auth service to connect
   // @param port of the auth service to connect to
-  constructor(accountID: string, address: string, port: number | undefined) {
+  constructor(accountID: string, address: string, port?: number) {
     this.accountID = accountID
     this.address = address
     if (!!port) {

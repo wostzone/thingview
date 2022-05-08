@@ -1,7 +1,7 @@
 // Constants for use by applications
 import fs, { access } from 'fs'
 import { ThingTD } from '../thing/ThingTD'
-import { thingStore, ThingStore } from "../thing/ThingStore"
+import { ThingStore } from "../thing/ThingStore"
 import { ConsumedThing } from '../thing/ConsumedThing'
 import { DateTime } from 'luxon'
 import { UnauthorizedError } from './errors'
@@ -33,20 +33,21 @@ const StatusNew = "new"
 
 // Client for connecting to a Hub Directory Service and query TDs
 export class DirectoryClient {
-  private hostPort: string = ""
-  private caCert: string = "" // in PEM format
-  private thingStore: ThingStore
+  private _hostPort: string = ""
+  private _caCert: string = "" // in PEM format
+  private _thingStore: ThingStore
   // private tlsClient: TLSSocket|null = null
 
   // Directory service client
-  // @param address of directory service to connect to.
-  // @param port the directory service is listening on. Use default port if not provided
-  constructor(address: string, port: number | undefined) {
+  // @param thingStore: store for received TDs
+  // @param address: of directory service to connect to.
+  // @param port: the directory service is listening on. Use default port if not provided
+  constructor(thingStore: ThingStore, address: string, port?: number) {
     if (!port) {
       port = DefaultPort
     }
-    this.hostPort = address + ":" + port.toString()
-    this.thingStore = thingStore
+    this._hostPort = address + ":" + port.toString()
+    this._thingStore = thingStore
   }
 
   /**
@@ -111,7 +112,7 @@ export class DirectoryClient {
     if (limit <= 0) {
       limit = DefaultLimit
     }
-    let url = "https://" + this.hostPort + PATH_THINGS
+    let url = "https://" + this._hostPort + PATH_THINGS
     // axios.get(url, {httpsAgent})
     // let options = {
     //     hostname: this.address,
@@ -157,7 +158,7 @@ export class DirectoryClient {
           td.deviceID = parts.deviceID
           td.publisher = parts.publisherID
           td.deviceType = parts.deviceType
-          this.thingStore.update(td)
+          this._thingStore.update(td)
         }
       }).catch((reason: any) => {
         console.warn("Failed retrieving directory: ", reason)
@@ -169,20 +170,10 @@ export class DirectoryClient {
    * this returns a promise with object holding property values
    */
   async readProperties(cThing: ConsumedThing, accessToken: string):Promise<Object> {
-    let url = "https://" + this.hostPort + PATH_VALUES + "/" + cThing.id
+    let url = "https://" + this._hostPort + PATH_VALUES + "/" + cThing.id
     console.log("DirectoryClient.readProperties: from '%s'", url)
 
     return this.getBatch(url, 0, MaxLimit, accessToken)
-    // await this.getBatch(url, 0, MaxLimit, accessToken)
-    //   .then((values: any) => {
-    //     console.log("DirectoryClient.readProperties: received values from url %s", url)
-    //     let thingProps = values as Object
-        
-    //     Object.entries(thingProps).forEach(([propName, val]) => {
-    //       let updated = DateTime.fromISO(val.updated)
-    //       cThing.handlePropertyChange(propName, val.value, updated)
-    //     })
-    //   })
   }
 
   /* QueryTDs with the given JSONPATH expression - todo

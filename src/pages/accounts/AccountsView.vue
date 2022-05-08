@@ -11,8 +11,7 @@ import {appState} from '@/data/AppState'
 import {accountStore, AccountRecord} from '@/data/accounts/AccountStore'
 
 import router from '@/router'
-import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
-import { thingStore } from "@/data/thing/ThingStore";
+import { thingFactory } from "@/data/protocolbinding/ThingFactory";
 
 const data = reactive({
   selectedRow : AccountRecord,
@@ -28,10 +27,7 @@ const $q = useQuasar()
  * Login to the account with the given password
  */
 const handleLogin = (account:AccountRecord, password:string) => {
-  consumedThingFactory.authenticate(account, password)
-  .then(()=>{
-    consumedThingFactory.connect(account, thingStore)
-  })
+  thingFactory.connect(account, password)
 }
 
 const handleStartAdd = () => {
@@ -75,10 +71,10 @@ const handleToggleEnabled = (record: AccountRecord) => {
   console.log("AccountsView.handleOnToggleEnabled")
   if (record.enabled) {
     accountStore.setEnabled(record.id, false)
-    consumedThingFactory.disconnect()
+    thingFactory.disconnect()
   } else {
     accountStore.setEnabled(record.id, true)
-    consumedThingFactory.connect(record, thingStore)
+    thingFactory.connect(record)
     .catch((err:any)=>{
       console.info("handleToggleEnabled. Error: %s", err)
     })
@@ -117,7 +113,7 @@ const handleToggleEnabled = (record: AccountRecord) => {
                      title="Hub Accounts"
                      style="width: 100%"
                      :editMode="appState.state.editMode"
-                     :connectionStatus="consumedThingFactory.connectionStatus"
+                     :connectionStatus="thingFactory.connectionStatus"
                      @onEdit="handleStartEdit"
                      @onDelete="handleStartDelete"
                      @onToggleEnabled="handleToggleEnabled"

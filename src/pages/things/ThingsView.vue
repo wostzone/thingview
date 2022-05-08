@@ -7,7 +7,7 @@
 import {reactive, ref} from 'vue'
 import {QCard, QCardSection, QIcon} from "quasar"
 import {matLensBlur} from "@quasar/extras/material-icons"
-import { thingStore } from '@/data/thing/ThingStore'
+import { thingFactory } from '@/data/protocolbinding/ThingFactory'
 import { ThingTD } from "@/data/thing/ThingTD"
 import ThingsTable2 from "./ThingsTable2.vue"
 // import ThingsTable from "./ThingsTable.vue"
@@ -57,7 +57,7 @@ const handleViewDetails = (row:ThingTD) => {
                     @on-view-details="handleViewDetails"
       >
       </ThingsTable> -->
-      <ThingsTable2  :things="thingStore.all" dense
+      <ThingsTable2  :things="thingFactory.thingStore.all" dense
                     title="Hub Things"
                     style="width: 100%"
                     @on-view-details="handleViewDetails"

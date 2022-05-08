@@ -5,7 +5,7 @@ import ThingDetailsView from './ThingDetailsView.vue'
 import {ThingTD} from "@/data/thing/ThingTD";
 import {useRouter} from "vue-router";
 // import { ConsumedThing } from '@/data/thing/ConsumedThing';
-import { consumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
+import { thingFactory} from '@/data/protocolbinding/ThingFactory';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 
 /**
@@ -29,10 +29,10 @@ const handleClosed = (ev:any) => {
 }
 
 const getCThing = (thingID: string): ConsumedThing => {
-  let cThing = consumedThingFactory.consumeWithID(thingID)
+  let cThing = thingFactory.consumeWithID(thingID)
   if (!cThing) {
     console.log("Router getCThing id: ", thingID, 'is unknown. Using dummy')
-    return consumedThingFactory.consume(new ThingTD({id:thingID}))
+    return thingFactory.consume(new ThingTD({id:thingID}))
   }
   return cThing
 }

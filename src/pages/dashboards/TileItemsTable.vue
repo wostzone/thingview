@@ -10,11 +10,10 @@ import TSimpleTable from '../../components/TSimpleTable.vue';
 import PropValueInfoPopup from './PropValueInfoPopup.vue';
 
 import { IDashboardTileItem } from '@/data/dashboard/DashboardStore';
-// import { ThingStore } from '@/data/thing/ThingStore';
 import { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
 import { PropNameName } from '@/data/thing/Vocabulary';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
-import { ConsumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
+import { ThingFactory } from '@/data/protocolbinding/ThingFactory';
 import InteractionOutput from '@/data/thing/InteractionOutput';
 import { timeAgo } from '@/data/timeAgo';
 import { DateTime } from 'luxon';
@@ -55,7 +54,7 @@ const props = defineProps<{
   /**
    * Create consumed thing instances of a Thing for interaction
    */
-  cThingFactory: ConsumedThingFactory
+  thingFactory: ThingFactory
 }>()
 
 const emits = defineEmits([
@@ -85,7 +84,7 @@ const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined):
   let itemAndProps: IThingTileItem[] = []
   if (tileItems) {
     tileItems.forEach(tileItem=>{
-      let cThing = props.cThingFactory.consumeWithID(tileItem.thingID)
+      let cThing = props.thingFactory.consumeWithID(tileItem.thingID)
       // let td = props.thingStore.getThingTDById(tileItem.thingID)
       if (!cThing) {
         console.warn("TileItemsTable.getThingTileItems. Unknown thing with ID '%s'", tileItem.thingID)

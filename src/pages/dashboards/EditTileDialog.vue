@@ -16,7 +16,7 @@ import { DashboardTileConfig, IDashboardTileItem, TileTypeCard, TileTypeImage } 
 import SelectThingPropertyDialog from "./SelectThingPropertyDialog.vue";
 import TileItemsTable from "./TileItemsTable.vue";
 import EditTileItemLabel from "./EditTileItemLabel.vue";
-import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
+import { thingFactory } from "@/data/protocolbinding/ThingFactory";
 
 const $q = useQuasar()
 
@@ -49,7 +49,7 @@ const handleAddThingProperty = () => {
      component: SelectThingPropertyDialog,
      componentProps: {
       //  tile: editTile,
-       things: consumedThingFactory.thingStore?.all,
+       things: thingFactory.thingStore.all,
       },
   }).onOk( (props)=>{
     let thingID=props.thingID
@@ -151,7 +151,7 @@ const handleSubmit = () =>{
         edit-mode
         @onRemoveTileItem="handleRemoveTileItem"  
         @onEditTileItem="handleEditTileItemLabel"
-        :cThingFactory="consumedThingFactory"
+        :thingFactory="thingFactory"
         />
       <div v-else>Missing dashboard tile items</div>
     </QForm>

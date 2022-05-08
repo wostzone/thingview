@@ -14,70 +14,74 @@ import { IConnectionStatus } from "../accounts/IConnectionStatus";
 import { UnauthorizedError } from "./errors";
 
 
-// Manage consumed Things and its message bus protocol bindings.
-// The MQTT protocol bindings is the only one used. See the readme for rational.
+// Manage TDs and consumed Things and their message bus protocol bindings.
+// The MQTT protocol bindings is the only one needed. See the readme for rational.
 //
 // This:
-//   1. creates consumed things from a TD
-//   2. updates consumed things properties when property update messages are received
-//   3. updates consumed things with received events
-//   4. passes action requests by consumed things to exposed things
-//   5. passes write properties requests by consumed things to exposed things
-//   6. updates things TD store when updates to TD documents are received
+//   1. Manages the store of TD (ThingStore)
+//   2. creates consumed things from a TD on demand
+//   3. updates consumed things properties when property update messages are received
+//   4. updates consumed things with received events
+//   5. passes action requests by consumed things to exposed things
+//   6. passes write properties requests by consumed things to exposed things
+//   7. updates things TD store when updates to TD documents are received
 //
 // This currently only handles a single Hub connection. 
 //
-export class ConsumedThingFactory {
+export class ThingFactory {
 
   /** account to use to connect to the MQTT broker. See start() */
-  private account: AccountRecord
+  private _account: AccountRecord
 
   /** authentication client to obtain access tokens before connect */
-  private authClient?: AuthClient
+  private _authClient: AuthClient
 
   /** connection status including access token */
   private _connectionStatus: IConnectionStatus
 
   /** directory client for loading TD's and values */
-  private dirClient?: DirectoryClient
+  private _dirClient: DirectoryClient
 
   /** optional callback to notify of authentication failure and require a new password login */
-  private onAuthFailed?: (account: AccountRecord, err: Error) => void
+  private _onAuthFailed?: (account: AccountRecord, err: Error) => void
 
   /** callback for connection change notifications */
-  private onConnectCB?: (account: AccountRecord, isConnected: boolean) => void;
+  private _onConnectCB?: (account: AccountRecord, isConnected: boolean) => void;
 
   /** the mqtt client to use in bindings. See start() */
-  private mqttClient: MqttClient
+  private _mqttClient: MqttClient
 
   /** consumed things that are in use. See consume() */
-  private ctMap: Map<string, ConsumedThing>
+  private _ctMap: Map<string, ConsumedThing>
 
   /** bindings that are in use. See consume() */
-  private bindings: Map<string, MqttBinding>
+  private _bindings: Map<string, MqttBinding>
 
   /** ThingStore to update with newly received TDs */
-  private _thingStore?: ThingStore
+  private _thingStore: ThingStore
 
-  /** The ConsumedThingFactory creates consumed things and binds them to the
+  /** The ThingFactory creates consumed things and binds them to the
    * protocol used by the Thing as per TD. In WoST consumers only need to use the MQTT 
    * protocol binding.
    * Use start to start using it with a given account.
    */
   constructor() {
-    this.ctMap = reactive(new Map<string, ConsumedThing>())
-    // this.authClient = new AuthClient()
-    this.bindings = new Map<string, MqttBinding>()
-    // just a dummy account
-    this.account = new AccountRecord()
-    // this.dirClient = new DirectoryClient()
-    this.mqttClient = new MqttClient(
+    this._ctMap = reactive(new Map<string, ConsumedThing>())
+    this._bindings = new Map<string, MqttBinding>()
+    // dummy's to ensure they are defined
+    this._account = new AccountRecord()
+    this._authClient = new AuthClient("", "")
+    this._thingStore = new ThingStore()
+    this._dirClient = new DirectoryClient(this._thingStore, "")
+    //
+    this._mqttClient = new MqttClient(
       this.handleMqttConnected.bind(this),
       this.handleMqttDisconnected.bind(this),
       this.handleMqttMessage.bind(this),
       this.handleMqttGetAccessToken.bind(this)
     )
     this._connectionStatus = reactive({
+      // this._connectionStatus = ({
       account: undefined,
       accessToken: "",
       authenticated: false,
@@ -90,24 +94,26 @@ export class ConsumedThingFactory {
 
   /**
    * Authenticate or refresh the access token used by the protocols.
+   * 
+   * 'connect()' must be called first to provide account info.
    * If a password is provided then authenticate and obtain a new token pair
    * If no password is provided attempt to refresh the authentication tokens.
    * If refresh fails then the optional onAuthFailed callback is invoked. Callers
    * should call 'connect' again this time with a password.
    * If the promise succeeds then call connect to start.
    * 
-   * @param account to authenticate with
    * @param password optional password to authenticate with
    */
-  async authenticate(account: AccountRecord, password?: string) {
+  async authenticate(password?: string) {
     // FIXME: prevent concurrent authentication
-    console.log("ConsumedThingFactory.authenticate")
+    console.log("ThingFactory.authenticate")
     this._connectionStatus.authStatusMessage = "Authenticating..."
-    if (!this.authClient) {
-      this.authClient = new AuthClient(account.id, account.address, account.authPort)
-    }
+    // if (!this.authClient) {
+    //   this.authClient = new AuthClient(account.id, account.address, account.authPort)
+    // }
     if (password) {
-      return this.authClient.AuthenticateWithLoginID(account.loginName, password, account.rememberMe)
+      return this._authClient.AuthenticateWithLoginID(
+        this._account.loginName, password, this._account.rememberMe)
         .then((accessToken: string) => {
           this._connectionStatus.authenticated = true
           this._connectionStatus.accessToken = accessToken
@@ -116,11 +122,11 @@ export class ConsumedThingFactory {
         .catch((err: Error) => {
           this._connectionStatus.authenticated = false
           this._connectionStatus.authStatusMessage = "Login failed: " + err.message
-          console.warn("ConnectionManager.authenticate: ", this._connectionStatus.authStatusMessage)
+          console.warn("ThingFactory.authenticate: ", this._connectionStatus.authStatusMessage)
           throw (err)
         })
     } else {
-      return this.authClient.Refresh()
+      return this._authClient.Refresh()
         .then((accessToken: any) => {
           this._connectionStatus.authenticated = true
           this._connectionStatus.accessToken = accessToken
@@ -130,10 +136,10 @@ export class ConsumedThingFactory {
           this._connectionStatus.authenticated = false
           this._connectionStatus.authStatusMessage = "Auth refresh failed: " + err.message
 
-          console.warn("ConnectionManager.authenticate: ", err.message)
+          console.warn("ThingFactory.authenticate: ", err.message)
           // notify the caller so a password login can be attempted
-          if (this.onAuthFailed) {
-            this.onAuthFailed(account, err)
+          if (this._onAuthFailed) {
+            this._onAuthFailed(this._account, err)
           }
           throw (err)
         })
@@ -149,34 +155,33 @@ export class ConsumedThingFactory {
   // stop the existing connection before attempting to connect using the new account.
   // This returns a promise that resolves when connection succeeds.
   //
-  // 1. authenticate
+  // 1. authenticate - refresh tokens or login with password
   // 2. get TDs from directory
   // 3. connect to message bus
   //
-  // @param account to use with protocols, eg mqtt, http, directory clients
-  // @param accessToken to use to connect
-  // @param thingStore to update with TDs
-  // @param onConnectCB optional callback to receive change notification to the message bus connection
-  async connect(account: AccountRecord,
-    thingStore: ThingStore,
-    onConnectCB?: (account: AccountRecord, isConnected: boolean) => void,
-  ) {
+  // @param account: to use with protocols, eg mqtt, http, directory clients
+  // @param password: to login with, or undefined to try to refresh the existing tokens
+  async connect(account: AccountRecord, password?: string) {
 
     // Shutdown existing connections
     this.disconnect()
 
-    console.log("ConsumedThingFactory.connect/1: Connecting to account '%s' on address: %s", account.id, account.address)
-    this.account = account
-    this._thingStore = thingStore
-    this.onConnectCB = onConnectCB
-
-    // Refresh tokens. If this fails a login with password is needed.
+    console.log("ThingFactory.connect/1: Connecting to account '%s' on address: %s", account.id, account.address)
+    this._account = account
     this._connectionStatus.statusMessage = ""
-    await this.authenticate(account)
+    this._connectionStatus.account = account
+    this._thingStore = new ThingStore()
+    this._thingStore.load(account.id)
 
-    console.log("ConsumedThingFactory.connect/2: Loading the Thing Directory")
-    this.dirClient = new DirectoryClient(account.address, account.directoryPort)
-    await this.dirClient.loadDirectory(this._connectionStatus.accessToken)
+    // setup authentication and refresh existing tokens
+    // if refresh fails then update status and invoke the onAuthFailed callback
+    this._authClient = new AuthClient(account.id, account.address, account.authPort)
+    await this.authenticate(password)
+
+    // success or failure, setup the directory client
+    console.log("ThingFactory.connect/2: Loading the Thing Directory")
+    this._dirClient = new DirectoryClient(this.thingStore, account.address, account.directoryPort)
+    await this._dirClient.loadDirectory(this._connectionStatus.accessToken)
       .then(() => {
         this._connectionStatus.directory = true
         this._connectionStatus.statusMessage = "loaded directory"
@@ -187,8 +192,8 @@ export class ConsumedThingFactory {
 
       })
 
-    console.log("ConsumedThingFactory.connect/3: Connecting the to mqtt broker")
-    return this.mqttClient.connect(
+    console.log("ThingFactory.connect/3: Connecting the to mqtt broker")
+    return this._mqttClient.connect(
       account.id,
       account.address,
       account.mqttPort,
@@ -210,10 +215,11 @@ export class ConsumedThingFactory {
 
   // Disconnect the factory from the account
   disconnect(): void {
-    if (this.mqttClient) {
-      this.mqttClient.disconnect()
+    if (this._mqttClient) {
+      this._mqttClient.disconnect()
     }
     this.connectionStatus.connected = false
+    this._thingStore.save()
   }
 
   /** Get the current connection status of the consumedThing factory */
@@ -234,7 +240,7 @@ export class ConsumedThingFactory {
    * @param thingID is the ID of the TD
    */
   consumeWithID(thingID: string): ConsumedThing | undefined {
-    let td = this._thingStore?.getThingTDById(thingID)
+    let td = this._thingStore.getThingTDById(thingID)
     if (!td) {
       return undefined
     }
@@ -255,31 +261,39 @@ export class ConsumedThingFactory {
    * @param td is the Thing TD whose interaction instance to create
    */
   consume(td: ThingTD): ConsumedThing {
-    let ct = this.ctMap.get(td.id)
+    let ct = this._ctMap.get(td.id)
     if (ct) {
       // if a read failed last time then retry
       if (!ct.hasProperties) {
         ct.readAllProperties()
       }
       return ct
-    } 
-      // create a new instance of the CT and make it reactive
+    }
+    // create a new instance of the CT and make it reactive
     let ct2 = new ConsumedThing(td)
-    this.ctMap.set(td.id, ct2)
+    this._ctMap.set(td.id, ct2)
 
     // retrieve the reactive instance
     // Satisfy the compiler. It doesn't know that ctMap was just set 
-    ct = this.ctMap.get(td.id)
+    ct = this._ctMap.get(td.id)
     if (ct) {
       ct2 = ct
     }
     // do we need a directory binding?
-    ct2.readPropertiesHook = this.readProperties.bind(this)
+    // ct2.readPropertiesHook = this.readProperties.bind(this)
+    ct2.readPropertiesHook = (cThing: ConsumedThing): Promise<Object | undefined> => {
+      return this._dirClient.readProperties(cThing, this._connectionStatus.accessToken)
+        .then((props: Object) => {
+          console.log("consume: Read property values for Thing: %s", cThing.id)
+          return props
+        })
+    }
+
 
     // use the account that provided the TD
-    if (this.mqttClient) {
-      let mqttBinding = new MqttBinding(this.mqttClient, ct2)
-      this.bindings.set(td.id, mqttBinding)
+    if (this._mqttClient) {
+      let mqttBinding = new MqttBinding(this._mqttClient, ct2)
+      this._bindings.set(td.id, mqttBinding)
       mqttBinding.subscribe()
     }
 
@@ -288,7 +302,7 @@ export class ConsumedThingFactory {
     ct2.readAllProperties()
       .then()
       .catch((err: Error) => {
-        this.authenticate(this.account)
+        this.authenticate()
           .then(() => {
             ct2.readAllProperties()
               // .then(() => {
@@ -315,15 +329,15 @@ export class ConsumedThingFactory {
 
   // Return the connection status of the consumed things
   get isConnected(): boolean {
-    return this.mqttClient.isConnected
+    return this._mqttClient.isConnected
   }
 
   // Notify of changes to connection status
   handleMqttConnected(accountID: string) {
     this._connectionStatus.connected = true
     this._connectionStatus.statusMessage = "Reconnected to message bus"
-    if (this.onConnectCB) {
-      this.onConnectCB(this.account, true)
+    if (this._onConnectCB) {
+      this._onConnectCB(this._account, true)
     }
   }
   /** Handle MQTT connection failure
@@ -332,8 +346,8 @@ export class ConsumedThingFactory {
   handleMqttDisconnected(accountID: string, client: MqttClient, err?: Error) {
     this._connectionStatus.connected = false
     this._connectionStatus.statusMessage = "Lost connection to message bus"
-    if (this.onConnectCB) {
-      this.onConnectCB(this.account, false)
+    if (this._onConnectCB) {
+      this._onConnectCB(this._account, false)
     }
     // TODO: check of authentication error. for now assume this is the reason
     if (err) {
@@ -341,7 +355,7 @@ export class ConsumedThingFactory {
       this._connectionStatus.authStatusMessage = err.message
       // this will refresh the access token, which will be picked up by
       // the handleMqttGetAccessToken callback.
-      this.authenticate(this.account).then()
+      this.authenticate().then()
     }
   }
 
@@ -356,7 +370,7 @@ export class ConsumedThingFactory {
     // refresh JWT token - how to know it is expired without adding 
     // knowledge of the token?
     // this.authenticate(this.account)
-    console.log("ConsumedThingFactory.handleMqttGetAccessToken for account '%s'", accountID)
+    console.log("ThingFactory.handleMqttGetAccessToken for account '%s'", accountID)
     return this.connectionStatus.accessToken
   }
 
@@ -365,12 +379,12 @@ export class ConsumedThingFactory {
    * This dispatches the message to the consumed thing.
    */
   handleMqttMessage(_accountID: string, topic: string, payload: Buffer, _retain: boolean): void {
-    console.log("handleMqttMessage. topic:", topic, "Message size:", payload.length)
+    console.log("ThingFactory.handleMqttMessage. topic:", topic, "Message size:", payload.length)
     // pass the message to the mqtt protocol handler of the 'thing'
     let [thingID, topicType, subject] = splitTopic(topic)
-    let cThing = this.ctMap.get(thingID)
+    let cThing = this._ctMap.get(thingID)
     if (!cThing) {
-      console.error("handleMqttMessage. No consumed thing for thingID: ", thingID)
+      console.error("ThingFactory.handleMqttMessage. No consumed thing for thingID: ", thingID)
       return
     }
     if (topicType == TOPIC_TYPE_EVENT) {
@@ -385,12 +399,10 @@ export class ConsumedThingFactory {
       }
     } else if (topicType == TOPIC_TYPE_TD) {
       let td = JSON.parse(payload.toString())
-      if (this._thingStore) {
-        this._thingStore.addTD(td)
-      }
+      this._thingStore.addTD(td)
     } else {
       // unexpected
-      console.error("handleMqttMessage. Unexpected topicType: ", topicType)
+      console.error("ThingFactory.handleMqttMessage. Unexpected topicType: ", topicType)
       return
     }
   }
@@ -399,50 +411,31 @@ export class ConsumedThingFactory {
    * If this fails then reauthenticate and retry.
    * Note: this should go to a separate DirectoryBinding object
    */
-  async readProperties(cThing: ConsumedThing): Promise<Object | undefined> {
+  // async readProperties(cThing: ConsumedThing): Promise<Object | undefined> {
 
-    if (this.dirClient) {
-      return this.dirClient.readProperties(cThing, this._connectionStatus.accessToken)
-        .then((props: Object) => {
-          console.log("consume: Read property values for Thing: %s", cThing.id)
-          return props
-        })
-      // .catch((err: Error) => {
-      // console.warn("consume: Failed reading property values for Thing: %s: %s", cThing.id, err.message)
-      // If there is an auth error then refresh access token and retry again
-      // if (err instanceof UnauthorizedError) {
-      // this.authenticate(this.account)
-      //   .then(() => {
-      //     this.dirClient?.readProperties(cThing, this._connectionStatus.accessToken)
-      //       .then((props2: Object) => {
-      //         return props2
-      //       })
-      //   })
-      // .catch((err: Error) => {
-      //   console.warn("consume: re-authentication failed. Providing an empty instance.")
-      //   throw (err)
-      // })
-      // } else {
-      // throw (err)
-      // }
-      // })
-    } else {
-      return
-    }
-  }
+  //   if (this.dirClient) {
+  //     return this.dirClient.readProperties(cThing, this._connectionStatus.accessToken)
+  //       .then((props: Object) => {
+  //         console.log("consume: Read property values for Thing: %s", cThing.id)
+  //         return props
+  //       })
+  //   } else {
+  //     return
+  //   }
+  // }
 
   // Return the Thing TD store associated with this factory
-  get thingStore(): ThingStore | undefined {
+  get thingStore(): ThingStore {
     return this._thingStore
   }
 
   /** Set the handler to invoke when authentication failed and a password login is required */
   setAuthFailedHandler(handler: (account: AccountRecord, err: Error) => void) {
-    this.onAuthFailed = handler
+    this._onAuthFailed = handler
   }
 
 }
 // this factory is a singleton
-const consumedThingFactory = new ConsumedThingFactory()
+const thingFactory = new ThingFactory()
 
-export { consumedThingFactory }
+export { thingFactory }

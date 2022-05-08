@@ -7,7 +7,7 @@ import CardWidget from './CardWidget.vue'
 import {matContentCopy, matContentPaste, matCopyAll, matDelete, matEdit, matMenu} from "@quasar/extras/material-icons";
 import TMenuButton, { IMenuItem } from "@/components/TMenuButton.vue";
 import EditTileDialog from "./EditTileDialog.vue";
-import { ConsumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
+import { ThingFactory } from "@/data/protocolbinding/ThingFactory";
 
 const $q = useQuasar()
 
@@ -29,7 +29,7 @@ const props = defineProps<{
 /**
    * Collection of consumed things for display of the tile items
    */
-  cThingFactory: ConsumedThingFactory
+  thingFactory: ThingFactory
 
   /**
    * Tile to edit
@@ -155,7 +155,7 @@ const handleMenuAction = (menuItem:IMenuItem) => {
         <CardWidget 
           :tile="props.tile" 
           :editMode="props.editMode"
-          :cThingFactory="props.cThingFactory"
+          :thingFactory="props.thingFactory"
         />
       </QCardSection>
 

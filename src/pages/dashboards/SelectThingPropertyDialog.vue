@@ -1,12 +1,17 @@
 <script lang="ts" setup>
 
+/**
+ * This dialog shows a list of properties of a Thing to select from.
+ * It creates a consumed thing to be able to show current property values.
+ */
+
 import { reactive } from 'vue';
 import { useDialogPluginComponent, QCard, QInput, QList, QExpansionItem } from 'quasar';
 
 import TDialog from '@/components/TDialog.vue';
 import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import ThingPropertiesTable from '../things/ThingPropertiesTable.vue';
-import { consumedThingFactory } from '@/data/protocolbinding/ConsumedThingFactory';
+import { thingFactory } from '@/data/protocolbinding/ThingFactory';
 import { stringify } from 'querystring';
 import InteractionOutput from '@/data/thing/InteractionOutput';
 // inject handlers
@@ -88,7 +93,7 @@ const handleThingPropertySelect = (td:ThingTD, propID:string, tdProp:TDPropertyA
             <p style="font-size: small; font-style: italic;">ID: {{td.id}}</p>
             
             <ThingPropertiesTable 
-              :cThing="consumedThingFactory.consume(td)"
+              :cThing="thingFactory.consume(td)"
               enable-prop-select
               @onThingPropertySelect="handleThingPropertySelect"
             />

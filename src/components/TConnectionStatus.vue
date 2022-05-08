@@ -7,29 +7,26 @@ import {matLink, matLinkOff} from "@quasar/extras/material-icons";
 /** Button showing the connection status with colored link icon */
 const props = defineProps<{
   /** The connection status to show */
-  value: IConnectionStatus,
+  value: IConnectionStatus | undefined,
   /** optional route to navigate to when clicking the button */
   to?: String|Object,
   /** optionally show text description of the connection status below the icon */
   withText?:boolean,
 }>()
-
-const getStatusTooltip = (stat:IConnectionStatus):string => {
-  return stat.authStatusMessage + ", " + stat.statusMessage
-}
-
 </script>
 
 <template>
   <QBtn  flat
-         :icon="(props.value.connected) ? matLink : matLinkOff"
-         :text-color="(props.value.authenticated) ? 'green' : 'red'"
+         :icon="(props.value?.connected) ? matLink : matLinkOff"
+         :text-color="(props.value?.authenticated) ? 'green' : 'red'"
          :to="to"
   >
     <QTooltip  class="text-body2" transition-show="scale">
-      {{getStatusTooltip(props.value)}}
+      {{props.value?.authStatusMessage + "; " + props.value?.statusMessage}}
     </QTooltip>
   </QBtn>
-  <div v-if="props.withText">{{value.statusMessage}}</div>
+  <div v-if="props.withText">
+    {{props.value ? (props.value?.authStatusMessage + "; " + props.value.statusMessage) : "n/a"}}
+  </div>
 
 </template>

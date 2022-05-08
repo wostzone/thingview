@@ -21,7 +21,7 @@ import {appState} from '@/data/AppState'
 import DashboardTile from "./DashboardTile.vue";
 import TButton from "@/components/TButton.vue";
 import EditTileDialog from "./EditTileDialog.vue";
-import { consumedThingFactory } from "@/data/protocolbinding/ConsumedThingFactory";
+import { thingFactory } from "@/data/protocolbinding/ThingFactory";
 
 export interface ILayoutItem {
   i: string,
@@ -271,7 +271,7 @@ const updateDashboardLayout = (dashboard:DashboardDefinition|undefined) => {
        <DashboardTile 
           :tile="data.dashboard?.tiles?.[item.i]"
           :dashboard="data.dashboard"
-          :cThingFactory="consumedThingFactory"
+          :thingFactory="thingFactory"
           :dashStore="dashboardStore"
           :editMode="appState.state.editMode"
           />

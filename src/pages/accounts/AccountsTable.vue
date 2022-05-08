@@ -16,7 +16,8 @@ import { IConnectionStatus } from '@/data/accounts/IConnectionStatus';
 interface IAccountsTable {
   // Collection of accounts to display
   accounts: ReadonlyArray<AccountRecord>
-  // connection state for presenting the connection state of an account
+  // current connection state for presenting the connection state of an account
+  // TODO: support for multiple accounts
   connectionStatus: IConnectionStatus
   // Allow editing of accounts
   editMode?: boolean
@@ -116,7 +117,9 @@ const visibleColumns = ref([ 'edit', 'name', 'address', 'enabled', 'connected', 
     <!-- Connection status -->
     <template v-slot:body-cell-status="propz" >
       <QTd>
-        <TConnectionStatus :value="props.connectionStatus" withText/>
+        <TConnectionStatus 
+          :value="(propz.row?.id === props.connectionStatus?.account?.id) ? props.connectionStatus : undefined" 
+          withText/>
       </QTd>
     </template>
 
