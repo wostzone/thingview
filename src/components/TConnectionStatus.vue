@@ -14,6 +14,10 @@ const props = defineProps<{
   withText?:boolean,
 }>()
 
+const getStatusTooltip = (stat:IConnectionStatus):string => {
+  return stat.authStatusMessage + ", " + stat.statusMessage
+}
+
 </script>
 
 <template>
@@ -23,7 +27,7 @@ const props = defineProps<{
          :to="to"
   >
     <QTooltip  class="text-body2" transition-show="scale">
-      {{value.statusMessage}}
+      {{getStatusTooltip(props.value)}}
     </QTooltip>
   </QBtn>
   <div v-if="props.withText">{{value.statusMessage}}</div>

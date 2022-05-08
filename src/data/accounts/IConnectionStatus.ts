@@ -13,12 +13,17 @@ export interface IConnectionStatus {
   /** authentication was successful
    */
   authenticated: boolean
+  /** human description of authentication status
+   */
+  authStatusMessage: string
+
   /** the directory is obtained
    */
   directory: boolean
   /** message bus connection is established
    */
   connected: boolean
+
   /** human description of connection status
    */
   statusMessage: string

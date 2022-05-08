@@ -17,10 +17,10 @@ const props= defineProps<{
 
   <QForm style="background-color: blanchedalmond; padding:3px" >
     <QField label="Thing ID" stack-label dense >
-      {{props.cThing.id}}
+      {{props.cThing?.id}}
     </QField>
     <QField label="Thing Name" stack-label dense>
-      {{props.cThing.td.description + " ("+props.cThing?.td.deviceType+")" }}
+      {{props.cThing?.td.description + " -("+props.cThing?.td.deviceType+")" }}
     </QField>
     <QField  label="Property Name" stack-label dense >
       <!-- {{getDateText(props.cThing.td.created)}} -->

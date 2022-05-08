@@ -13,11 +13,22 @@ import {consumedThingFactory} from '@/data/protocolbinding/ConsumedThingFactory'
 const $q = useQuasar()
 
 
+/** Popup a login page on authentication failure  */
+const onAuthFailed = (account:AccountRecord, err:Error) => {
+  if (!consumedThingFactory.connectionStatus.authenticated) {
+    let newPath = "/accounts/"+account.id
+    console.log("AppView.connectToHub: Navigating to account edit for account '%s': path=%s", account.name, newPath)
+    router.push({name: "accounts.dialog", params: { accountID: account.id}})
+  }
+}
+
 /**
- * Create the protocol factory for the active account
+ * Connect the protocol factory for the first active account
  */
 const connectToHub = (accounts: ReadonlyArray<AccountRecord>) => {
-  // TODO: support multiple accounts
+  consumedThingFactory.setAuthFailedHandler(onAuthFailed)
+
+// TODO: support multiple accounts
   // connect to the first enabled account
   for (let account of accounts) {
     if (account.enabled) {
@@ -38,52 +49,12 @@ const connectToHub = (accounts: ReadonlyArray<AccountRecord>) => {
           type: 'negative',
           message: 'Connection to '+account.name+' at '+account.address+' failed: '+err,
         })
-        // popup login page
-        if (!consumedThingFactory.connectionStatus.authenticated) {
-          let newPath = "/accounts/"+account.id
-          console.log("AppView.connectToHub: Navigating to account edit for account '%s': path=%s", account.name, newPath)
-          router.push({name: "accounts.dialog", params: { accountID: account.id}})
-        }
       })
       break
     }
   }
 }
-//       connectionStatus.account = account
-//       let authClient = new AuthClient(account.id, account.address, account.authPort)
-//       console.log("ConnectionManager.AuthenticationRefresh: Refresh authentication with %s:%s", account.address, account.authPort)
 
-//       authClient.Refresh()
-//       .then((accessToken: string) => {
-//         console.log("ConnectionManager.AuthenticationRefresh: Authentication successful. Connecting to mqtt and directory")
-//         connectionStatus.authenticated = true
-//         connectionStatus.statusMessage = "Authentication refresh successful"
-//         return accessToken
-//       })
-//       .catch((err: Error) => {
-//         connectionStatus.authenticated = false
-//         connectionStatus.statusMessage = "Failed to refresh authentication token: " + err.message
-//         console.error("ConnectionManager.AuthenticationRefresh: failed to re-authenticate: ", err)
-//         // popup login page
-//         let newPath = "/accounts/"+account.id
-//         console.log("AppView.connectToHub: Navigating to account edit for account '%s': path=%s", account.name, newPath)
-//         router.push({name: "accounts.dialog", params: { accountID: account.id}})
-//         throw (err.message)
-//       });
-
-//       // protocol factory to create protocol bindings for consumed things
-//       consumedThingFactory.connect(account, 
-//         thingStore, 
-//         (account:AccountRecord, isConnected:boolean)=>{
-//           // handle (dis)connect
-//       }).then(()=>{
-//         connectionStatus.connected = true
-//         connectionStatus.statusMessage = "Connected to server"
-//       })
-
-//     }
-//   })
-// }
 
 /** Start the application, this loads the application state, accounts, dashboard store and
  * connects to the hub.

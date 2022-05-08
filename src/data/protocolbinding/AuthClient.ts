@@ -1,4 +1,5 @@
 import jwtDecode, { JwtPayload } from 'jwt-decode'
+import { UnauthorizedError } from './errors'
 
 // Default port of the Hub authentication service
 const DefaultPort = 8881
@@ -9,21 +10,6 @@ const DefaultJWTRefreshPath = "/auth/refresh"
 // DefaultJWTConfigPath for storing client configuration on the auth service
 const DefaultJWTConfigPath = "/auth/config"
 
-
-export class ResponseError extends Error {
-
-  constructor(message: string) {
-    super(message)
-  }
-  public errorCode: number = 0
-}
-
-export class UnauthorizedError extends ResponseError {
-  constructor(message: string) {
-    super(message)
-    this.errorCode = 401
-  }
-}
 
 /**
  * Login request message format. Must match that of the auth service authenticator
@@ -134,11 +120,13 @@ export class AuthClient {
     return this.httpsPost(DefaultJWTLoginPath, payload)
       .then(response => {
         if (response.status == 401) {
-          console.error("AuthClient.AuthenticateWithLoginID: Authentication Error", response.statusText)
-          throw (new UnauthorizedError("Authentication Error"))
+          let err = new UnauthorizedError("Authentication Error", response.status)
+          console.error("AuthClient.AuthenticateWithLoginID: ", err)
+          throw (err)
         } else if (response.status >= 400) {
-          console.error("AuthClient.AuthenticateWithLoginID: Authentication failed", response.status)
-          throw (new ResponseError("Authentication failed: " + response.statusText))
+          let err = new UnauthorizedError("Authentication failed: " + response.statusText, response.status)
+          console.error("AuthClient.AuthenticateWithLoginID: ", err)
+          throw (err)
         }
         // convert the result to json
         return response.json()
@@ -177,14 +165,15 @@ export class AuthClient {
     return this.httpsPost(DefaultJWTRefreshPath, "")
       .then(response => {
         if (response.status >= 400) {
-          console.error("AuthClient.Refresh: Authentication Error", response.statusText)
-          throw (new UnauthorizedError("Authentication Error"))
+          let err = new UnauthorizedError("Authentication Error", response.status)
+          console.error("AuthClient.Refresh: ", err.message)
+          throw (err)
         }
         // response contains access and refresh tokens
         return response.json()
       })
       .then(jsonResponse => {
-        console.log("AuthClient.Refresh: Authentication token refresh for user: %s", this.loginID)
+        console.log("AuthClient.Refresh: Authentication token refreshed for user: %s", this.loginID)
         this._accessToken = jsonResponse.accessToken
         sessionStorage.setItem(this.sessionKey, jsonResponse.accessToken)
         return (jsonResponse.accessToken)

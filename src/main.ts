@@ -6,7 +6,7 @@ import router from './router';
 import { Dialog, Notify, Quasar} from 'quasar'
 
 // Import SVG icon libraries (don't include the full bundle)
-import iconSet from 'quasar/icon-set/svg-material-icons.js'
+import iconSet from 'quasar/icon-set/svg-material-icons'
 // import iconSet from 'quasar/icon-set/svg-mdi-v6.js'
 // import '@quasar/extras/material-icons/material-icons.css'
 import 'quasar/dist/quasar.css'

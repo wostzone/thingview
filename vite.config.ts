@@ -16,20 +16,30 @@ import { visualizer } from 'rollup-plugin-visualizer';
  */
 export default defineConfig({
   // build: {
-  // // enable for production source maps
+  // enable for production source maps
   //   sourcemap:true,
   // },
+  // Disable HMR as debugging with HMR sourcemaps doesn't work :(
+  server: {
+    hmr: false
+  },
+  css: {
+    // devSourcemap: true,
+  },
+  build: {
+    // sourcemap: true,
+  },
   plugins: [
-      vue({
-        template: {transformAssetUrls},
-      }),
+    vue(
+      { template: { transformAssetUrls } }
+    ),
       quasar(),
       visualizer(),
     ],
     resolve: {
-    alias: {
-      // so we can start the import with @/
-      '@': path.resolve(__dirname, '/src'),
-    },
+      alias: {
+        // so we can start the import with @/
+        '@': path.resolve(__dirname, '/src'),
+      },
     },
 })

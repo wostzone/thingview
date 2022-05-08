@@ -4,6 +4,7 @@ import { ThingTD } from '../thing/ThingTD'
 import { thingStore, ThingStore } from "../thing/ThingStore"
 import { ConsumedThing } from '../thing/ConsumedThing'
 import { DateTime } from 'luxon'
+import { UnauthorizedError } from './errors'
 
 
 const DefaultServiceName = "thingdir"
@@ -72,8 +73,9 @@ export class DirectoryClient {
       console.warn(err)
       throw (err)
     } else if (resp.status >= 400) {
-      let err = new Error(`DirectoryClient.getBatch: Error code '{resp.status}' ({resp.statusText}) for URL: {url}`)
-      console.warn(err)
+      let msg = "Status code " + resp.status + " (" + resp.statusText + ") for URL: " + url
+      let err = new UnauthorizedError(msg, resp.status)
+      console.log("DirectoryClient.getBatch failed: ", err.message)
       throw (err)
     }
     let respText = await resp.text()
@@ -163,21 +165,24 @@ export class DirectoryClient {
       })
   }
 
-  // read the property values for use in a Consumed Thing
-  // This only needs to be done during startup. MQTT subscription keeps the values up to date.
-  async readProperties(cThing: ConsumedThing, accessToken: string) {
+  /** read the property values for use in a Consumed Thing
+   * this returns a promise with object holding property values
+   */
+  async readProperties(cThing: ConsumedThing, accessToken: string):Promise<Object> {
     let url = "https://" + this.hostPort + PATH_VALUES + "/" + cThing.id
     console.log("DirectoryClient.readProperties: from '%s'", url)
 
-    await this.getBatch(url, 0, MaxLimit, accessToken)
-      .then((values: any) => {
-        console.log("DirectoryClient.readProperties: received values from url %s", url)
-        let thingProps = values as Object
-        Object.entries(thingProps).forEach(([propName, val]) => {
-          let updated = DateTime.fromISO(val.updated)
-          cThing.handlePropertyChange(propName, val.value, updated)
-        })
-      })
+    return this.getBatch(url, 0, MaxLimit, accessToken)
+    // await this.getBatch(url, 0, MaxLimit, accessToken)
+    //   .then((values: any) => {
+    //     console.log("DirectoryClient.readProperties: received values from url %s", url)
+    //     let thingProps = values as Object
+        
+    //     Object.entries(thingProps).forEach(([propName, val]) => {
+    //       let updated = DateTime.fromISO(val.updated)
+    //       cThing.handlePropertyChange(propName, val.value, updated)
+    //     })
+    //   })
   }
 
   /* QueryTDs with the given JSONPATH expression - todo

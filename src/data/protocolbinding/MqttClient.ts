@@ -41,8 +41,8 @@ export class MqttClient {
   private connectedTimeStamp: number | null
   // private messageCount: number
   private mqttJS: MQTT.Client | null
-  private readonly onConnected?: (accountID: string, client: & MqttClient) => void
-  private readonly onDisconnected?: (accountID: string, client: & MqttClient) => void
+  private readonly onConnected?: (accountID: string, client: MqttClient) => void
+  private readonly onDisconnected?: (accountID: string, client: MqttClient, error?: Error) => void
   private readonly onMessage: (accountID: string, topic: string, payload: Buffer, retain: boolean) => void
   private readonly onGetAccessToken: (accountID: string) => string
   private msgCount: number
@@ -50,14 +50,18 @@ export class MqttClient {
   private sysValues: Map<string, string> // map of broker $SYS topics and their values
 
   /**
+   * Create a MQTT client instance.
+   * The 'onGetAccessToken' callback is invoked before the client attempts to reconnect.
+   * If the token has expired it should be refreshed.
+   * 
    * @param onConnected: callback when connection is established
-   * @param onDisconnected: callback when a successful connection has broken
+   * @param onDisconnected: callback when a successful connection has broken or an error occurred
    * @param onMessage: callback with incoming message from subscribed topic
-   * @param onGetAccessToken: callback for obtaining an access token before connecting
+   * @param onGetAccessToken: callback for obtaining an access token before reconnecting
    */
   constructor(
-    onConnected: (accountID: string, client: & MqttClient) => void,   // callback invoked when connected
-    onDisconnected: (accountID: string, account: & MqttClient) => void,
+    onConnected: (accountID: string, client: MqttClient) => void,   // callback invoked when connected
+    onDisconnected: (accountID: string, account: MqttClient, err?: Error) => void,
     onMessage: (accountID: string, topic: string, payload: Buffer, retained: boolean) => void,
     onGetAccessToken: (accountID: string) => string,
   ) {
@@ -126,14 +130,10 @@ export class MqttClient {
     let url = 'wss://' + this.address + ":" + this.port.toString() + "/mqtt"
     let now = new Date()
     let clientID = loginID + "-" + now.toISOString()
-    // let options: MQTT.IClientOptions = {
-    //   reconnectPeriod: 5000,
-    //   username: loginID,
-    //   password: accessToken,
-    //   clientId: clientID,
-    // }
+    // transformWsUrl obtains the latest access token after a token refresh
     let options: MQTT.IClientOptions = {
-      reconnectPeriod: 5000,
+      reconnectPeriod: 3000,
+      connectTimeout: 10000,
       username: loginID,
       password: accessToken,
       clientId: clientID,
@@ -209,11 +209,11 @@ export class MqttClient {
   // The call to connect failed or timed out.
   // Invoke optional onDisconnectCallback and try again in 30 seconds
   handleConnectFailed(responseObject: Error) {
-    console.warn("MqttClient.handleConnectFailed: Connection to MQTT broker failed: " + responseObject, "Retrying in 30 seconds...")
+    console.warn("MqttClient.handleConnectFailed: Connection to MQTT broker failed: " + responseObject)
 
     if (this.onDisconnected) {
       // satisfy typescript
-      this.onDisconnected(this.accountID, this)
+      this.onDisconnected(this.accountID, this, responseObject)
     }
     // Wait 30 seconds before retrying
     // setTimeout(this.doConnect.bind(this), 30000)
