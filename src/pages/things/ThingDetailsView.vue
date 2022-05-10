@@ -13,6 +13,7 @@ import ThingActions from "@/pages/things/ThingActions.vue";
 import ThingPropertiesTable from "@/pages/things/ThingPropertiesTable.vue";
 import ThingConfiguration from "@/pages/things/ThingConfiguration.vue";
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
+import ThingEventsTable from './ThingEventsTable.vue';
 
 
 const {formatDate}= date
@@ -68,7 +69,7 @@ const getDateText = (iso:string): string => {
       </QTabPanel>
 
       <QTabPanel name="events" class="q-pa-xs">
-        <ThingEvents :cThing="props.cThing"/>
+        <ThingEventsTable :cThing="props.cThing"/>
       </QTabPanel>
 
       <QTabPanel name="actions" class="q-pa-xs">

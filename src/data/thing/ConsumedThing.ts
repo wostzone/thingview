@@ -86,6 +86,12 @@ export class ConsumedThing {
     }
   }
 
+  /** Get cached events of the Thing 
+   */
+  get events(): Map<string, InteractionOutput> {
+    return this.eventMap
+  }
+
   /** Status of cThing. 
    * True if readproperties has been called successfuly 
    */
@@ -177,7 +183,8 @@ export class ConsumedThing {
     return this.invokeActionHook(actionName, params, actionAffordance)
   }
 
-  /** Get cached properties of the Thing */
+  /** Get cached properties of the Thing
+   */
   get properties(): Map<string, InteractionOutput> {
     return this.propertyMap
   }

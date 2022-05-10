@@ -12,6 +12,7 @@ import { DirectoryClient } from "./DirectoryClient";
 import { AuthClient } from "./AuthClient";
 import { IConnectionStatus } from "../accounts/IConnectionStatus";
 import { UnauthorizedError } from "./errors";
+import { bind } from "lodash-es";
 
 
 // Manage TDs and consumed Things and their message bus protocol bindings.
@@ -376,27 +377,25 @@ export class ThingFactory {
 
   /**
    * Handle an incoming MQTT message
-   * This dispatches the message to the consumed thing.
+   * This dispatches the message to the mqtt binding for the thing
    */
   handleMqttMessage(_accountID: string, topic: string, payload: Buffer, _retain: boolean): void {
     console.log("ThingFactory.handleMqttMessage. topic:", topic, "Message size:", payload.length)
     // pass the message to the mqtt protocol handler of the 'thing'
     let [thingID, topicType, subject] = splitTopic(topic)
-    let cThing = this._ctMap.get(thingID)
-    if (!cThing) {
-      console.error("ThingFactory.handleMqttMessage. No consumed thing for thingID: ", thingID)
-      return
-    }
+    // let cThing = this._ctMap.get(thingID)
+    // if (!cThing) {
+    //   console.error("ThingFactory.handleMqttMessage. No consumed thing for thingID: ", thingID)
+    //   return
+    // }
     if (topicType == TOPIC_TYPE_EVENT) {
-      let params = JSON.parse(payload.toString())
-      if (subject == TOPIC_SUBJECT_PROPERTIES) {
-        for (let [propName, value] of Object.entries(params)) {
-          cThing.handlePropertyChange(propName, value)
-        }
-      } else {
-        let eventName = subject
-        cThing.handleEvent(eventName, params)
+      // events are only passed to active bindings
+      let binding = this._bindings.get(thingID)
+      if (!binding) {
+        console.error("ThingFactory.handleMqttMessage. No mqtt binding for thingID: ", thingID)
+        return
       }
+      binding.handleEvent(subject, payload)
     } else if (topicType == TOPIC_TYPE_TD) {
       let td = JSON.parse(payload.toString())
       this._thingStore.addTD(td)

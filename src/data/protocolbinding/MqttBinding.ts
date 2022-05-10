@@ -1,7 +1,7 @@
 import { ConsumedThing } from "../thing/ConsumedThing";
 import { TDActionAffordance, ThingTD } from "../thing/ThingTD";
 import { MqttClient } from "./MqttClient";
-import { splitTopic } from "./topics";
+import { splitTopic, TOPIC_SUBJECT_PROPERTIES, TOPIC_TYPE_EVENT } from "./topics";
 
 // MQTT protocol binding for consumed things
 //
@@ -19,29 +19,32 @@ import { splitTopic } from "./topics";
 //       5. subscribe to things/{thingID}/td|event messages
 export class MqttBinding {
   private mqttClient: MqttClient
-  private consumedThing: ConsumedThing
+  private cThing: ConsumedThing
 
   constructor(mqttClient: MqttClient, consumedThing: ConsumedThing) {
     this.mqttClient = mqttClient
-    this.consumedThing = consumedThing
+    this.cThing = consumedThing
     consumedThing.invokeActionHook = this.invokeAction
   }
 
   /** handle incoming event or property update message */
-  handleEvent(topic: string, message: any) {
-    let [thingID, topicType, subject] = splitTopic(topic)
-    console.log("MqttBinding.handleEvent. topic=", topic)
-    if (subject === "properties") {
-      // handle properties
+  handleEvent(eventName: string, message: any) {
+    console.log("MqttBinding.handleEvent. event=", eventName)
+    let params = JSON.parse(message)
+
+    if (eventName == TOPIC_SUBJECT_PROPERTIES) {
+      for (let [propName, value] of Object.entries(params)) {
+        this.cThing.handlePropertyChange(propName, value)
+      }
     } else {
-      // handle event
+      this.cThing.handleEvent(eventName, params)
     }
   }
 
   /** Consumed Thing invokes action using this protocol binding
    */
   invokeAction(name: string, params: any, actionAffordance: TDActionAffordance): void {
-    let topic = "things/" + this.consumedThing.id + "/action/" + name
+    let topic = "things/" + this.cThing.id + "/action/" + name
     let jsonPayload = JSON.stringify(params)
     this.mqttClient.publish(topic, jsonPayload)
   }
@@ -50,7 +53,7 @@ export class MqttBinding {
    * This require the ExposedThing to be online.
    */
   writeProperties(props: Map<string, any>, td: ThingTD) {
-    let topic = "things/" + this.consumedThing.id + "/write/properties"
+    let topic = "things/" + this.cThing.id + "/write/properties"
     let jsonPayload = JSON.stringify(props)
     this.mqttClient.publish(topic, jsonPayload)
   }
@@ -59,15 +62,15 @@ export class MqttBinding {
    */
   subscribe() {
     // receive events
-    console.log("MqttBinding.subscribe to events from Thing %s", this.consumedThing.id)
-    let topic = "things/" + this.consumedThing.id + "/event/#"
+    console.log("MqttBinding.subscribe to events from Thing %s", this.cThing.id)
+    let topic = "things/" + this.cThing.id + "/event/#"
     this.mqttClient.subscribe(topic, 1, this.handleEvent)
   }
 
   /** Unsubscribe from all MQTT messages
    */
   unsubscribe() {
-    console.log("MqttBinding.unsubscribe from events from Thing %s", this.consumedThing.id)
+    console.log("MqttBinding.unsubscribe from events from Thing %s", this.cThing.id)
     throw ("unsubscribe not implemented")
   }
 

@@ -7,42 +7,22 @@ import { DateTime } from 'luxon';
 //   'July', 'August', 'September', 'October', 'November', 'December'
 // ];
 
-
-// function getFormattedDate(date: Date, prefomattedDate = false, hideYear = false) {
-//   const day = date.getDate();
-//   const month = MONTH_NAMES[date.getMonth()];
-//   const year = date.getFullYear();
-//   const hours = date.getHours();
-//   let minutes = date.getMinutes();
-
-//   if (minutes < 10) {
-//     // Adding leading zero to minutes
-//     minutes = `0${minutes}`;
-//   }
-
-//   if (prefomattedDate) {
-//     // Today at 10:20
-//     // Yesterday at 10:20
-//     return `${prefomattedDate} at ${hours}:${minutes}`;
-//   }
-
-//   if (hideYear) {
-//     // 10. January at 10:20
-//     return `${day}. ${month} at ${hours}:${minutes}`;
-//   }
-
-//   // 10. January 2017. at 10:20
-//   return `${day}. ${month} ${year}. at ${hours}:${minutes}`;
-// }
-
-// --- Main function
-export function timeAgo(datim?: DateTime): string {
+/** Determine the human readable time difference between two dates
+ * This returns the difference in either nr of days, hours or minutes.
+ * If the difference exceeds 365 days, it returns n/a
+ */
+export function timeAgo(datim?: DateTime, comparedTo?: DateTime): string {
   let ago: string = ""
   if (!datim) {
     return "";
   }
-  let delta = DateTime.now().diff(datim, ['days', 'hours', 'minutes', 'seconds'])
-  if (delta.days > 1) {
+  if (!comparedTo) {
+    comparedTo = DateTime.now()
+  }
+  let delta = comparedTo.diff(datim, ['days', 'hours', 'minutes', 'seconds'])
+  if (delta.days > 365) {
+    ago = "n/a"
+  } else if (delta.days > 1) {
     ago = `${delta.days} days ago`
   } else if (delta.days > 0) {
     ago = `${delta.days} day ago`
