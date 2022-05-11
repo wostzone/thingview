@@ -12,8 +12,7 @@ import TDialog from '@/components/TDialog.vue';
 import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import ThingPropertiesTable from '../things/ThingPropertiesTable.vue';
 import { thingFactory } from '@/data/protocolbinding/ThingFactory';
-import { stringify } from 'querystring';
-import InteractionOutput from '@/data/thing/InteractionOutput';
+
 // inject handlers
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 

@@ -111,15 +111,15 @@ export class ConsumedThing {
   /** Return the value of a property as text including unit or "n/a" if property not found.
    * This is a convenience function
    */
-  getPropertyValueText(propName: string): [value: string, found: boolean] {
-    let propIO = this.propertyMap.get(propName)
-    if (!propIO) {
-      return ["n/a", false]
-    }
-    // FIXME: use the string representation of value
-    let valueStr = propIO.value + (propIO.schema?.unit ? " " + propIO.schema.unit : "")
-    return [valueStr, true]
-  }
+  // getPropertyValueText(propName: string): [value: string, found: boolean] {
+  //   let propIO = this.propertyMap.get(propName)
+  //   if (!propIO) {
+  //     return ["n/a", false]
+  //   }
+  //   // FIXME: use the string representation of value
+  //   let valueStr = propIO.value + (propIO.schema?.unit ? " " + propIO.schema.unit : "")
+  //   return [valueStr, true]
+  // }
 
   /** handleEvent handles an event received by the protocol binding
    * @param eventName name of the event 

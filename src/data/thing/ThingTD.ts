@@ -51,7 +51,8 @@ export class TDInteractionAffordance extends Object {
 
 }
 
-// Thing Description Action Affordance
+/** Thing Description Action Affordance
+ */
 export class TDActionAffordance extends TDInteractionAffordance {
 
   // action input parameters
@@ -62,15 +63,17 @@ export class TDActionAffordance extends TDInteractionAffordance {
   }>()
 }
 
-// Thing Description Event Affordance
+/** Thing Description Event Affordance
+ */
 export class TDEventAffordance extends TDInteractionAffordance {
   // Data schema of the event instance message, eg the event payload
   public data: TDDataSchema | undefined = undefined
 }
 
-// Thing Description property affordance
+/** Thing Description property affordance
+ */
 export class TDPropertyAffordance extends TDDataSchema {
-  // property name is used for id to be able to pass properties as an array for presentation
+  // property id is assigned the property name to be able to use in an array for presentation
   id: string = ""
 
   // Form hypermedia controls to describe how an operation can be performed
@@ -78,11 +81,13 @@ export class TDPropertyAffordance extends TDDataSchema {
   public forms: TDForm[] = []
 
   // Optional nested properties. Map with PropertyAffordance
+  // used when a property has multiple instances, each with their own name
   public properties: Map<string, TDPropertyAffordance> | undefined = undefined
 }
 
 
-// Thing description document
+/** Thing description document
+ */
 export class ThingTD extends Object {
   /** Unique thing ID */
   public id: string = "";

@@ -1,7 +1,7 @@
 
 export class TDDataSchema extends Object {
   // Used to indicate input, output, attribute. See vocab.WoSTAtType
-  public atType: string = ""
+  // public atType string = "" `json:"@type"` 
 
   // Provides a default value of any type as per data schema
   public default: string = ""

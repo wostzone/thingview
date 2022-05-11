@@ -10,7 +10,6 @@ const DefaultJWTRefreshPath = "/auth/refresh"
 // DefaultJWTConfigPath for storing client configuration on the auth service
 const DefaultJWTConfigPath = "/auth/config"
 
-
 /**
  * Login request message format. Must match that of the auth service authenticator
  */

@@ -1,11 +1,31 @@
 // From: https://muffinman.io/blog/javascript-time-ago-function/
 
+// This module provides reactive functions to present the age of a timestamp.
+// It uses vue3's ref to periodically update the computed age.
 import { DateTime } from 'luxon';
+import { ref } from 'vue';
 
-// const MONTH_NAMES = [
-//   'January', 'February', 'March', 'April', 'May', 'June',
-//   'July', 'August', 'September', 'October', 'November', 'December'
-// ];
+
+// currentTime, updated periodically. Intended for live update of data age indicators. 
+export const currentTime = ref(DateTime.now())
+setInterval(() => {
+  currentTime.value = DateTime.now()
+}, 20000)
+
+
+/** Determine the human readable time difference between an iso date and a DateTime date
+ */
+export function isoTimeAgo(isoTime: string, comparedTo?: DateTime): string {
+  let fromTime = DateTime.fromISO(isoTime)
+  return timeAgo(fromTime, comparedTo)
+}
+
+/** Computed reactive age of a timestamp.
+ * This updates periodicially to provide the age in minutes, hours or days
+ */
+export function isoAge(isoTime: string): string {
+  return isoTimeAgo(isoTime, currentTime.value)
+}
 
 /** Determine the human readable time difference between two dates
  * This returns the difference in either nr of days, hours or minutes.
@@ -36,5 +56,4 @@ export function timeAgo(datim?: DateTime, comparedTo?: DateTime): string {
     ago = `${delta.minutes} minutes ago`
   }
   return ago
-
 }

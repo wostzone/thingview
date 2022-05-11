@@ -3,7 +3,7 @@
 import {h, VNode} from 'vue'
 import { get as _get} from 'lodash-es'
 import { matRemove, matEdit } from '@quasar/extras/material-icons';
-import { QTooltip } from 'quasar';
+import { useQuasar, QToggle, QTooltip } from 'quasar';
 
 import TButton from '@/components/TButton.vue'
 import TSimpleTable from '../../components/TSimpleTable.vue';
@@ -11,13 +11,15 @@ import PropValueInfoPopup from './PropValueInfoPopup.vue';
 
 import { IDashboardTileItem } from '@/data/dashboard/DashboardStore';
 import { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
-import { PropNameName } from '@/data/thing/Vocabulary';
+import { PropNameName, PropNameOnOffSwitch, PropNameRelay, PropNameSwitch } from '@/data/thing/Vocabulary';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import { ThingFactory } from '@/data/protocolbinding/ThingFactory';
 import InteractionOutput from '@/data/thing/InteractionOutput';
 import { timeAgo } from '@/data/timeAgo';
 import { DateTime } from 'luxon';
+import { TDPropertyAffordance } from '@/data/thing/ThingTD';
 
+const $q = useQuasar()
 
 /**
  * Table with tile item name and value
@@ -48,6 +50,10 @@ const props = defineProps<{
    */
   noHeader?: boolean
   /**
+   * Hide the type column
+   */
+  noTypeCol?: boolean
+  /**
    * The rows to display
    */
   tileItems:IDashboardTileItem[]
@@ -71,6 +77,8 @@ interface IThingTileItem {
   tileItem: IDashboardTileItem,
   /** consumed thing for this property */
   cThing?: ConsumedThing
+  /** the affordance describing the property */
+  affordance?: TDPropertyAffordance
   /** The item property output */
   propIO?: InteractionOutput
 }
@@ -88,23 +96,24 @@ const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined):
       // let td = props.thingStore.getThingTDById(tileItem.thingID)
       if (!cThing) {
         console.warn("TileItemsTable.getThingTileItems. Unknown thing with ID '%s'", tileItem.thingID)
+
         itemAndProps.push({
-          key: tileItem.thingID+"."+tileItem.propertyID,
+          key: tileItem.thingID+"."+tileItem.propertyName,
           tileItem: tileItem, 
-          // td: td,
-          // tdProp: tdProp,
         })
         return
       }
       // property values are provided through the 'consumed thing'
       // let cThing = props.cThingFactory?.consume(td)
-      // let tdProp = td.properties[tileItem.propertyID]
-      let propIO = cThing.properties.get(tileItem.propertyID)
+      let tdProp = cThing.td.properties[tileItem.propertyName]
+      let propIO = cThing.properties.get(tileItem.propertyName)
+      // let propIO = cThing.properties.get(tileItem.propertyID)
       if (!propIO) {
-        console.warn("TileItemsTable.getThingTileItems. Missing prop '%s' in TD '%s'", tileItem.propertyID, tileItem.thingID)
+        console.warn("TileItemsTable.getThingTileItems. Missing prop '%s' in TD '%s'", tileItem.propertyName, tileItem.thingID)
       }
       itemAndProps.push({
-        key: tileItem.thingID+"."+tileItem.propertyID,
+        affordance: tdProp,
+        key: tileItem.thingID+"."+tileItem.propertyName,
         tileItem: tileItem, 
         cThing: cThing,
         propIO: propIO,
@@ -116,13 +125,43 @@ const getThingTileItems = (tileItems:IDashboardTileItem[]|undefined):
   return itemAndProps
 }
 
-const getThingPropValue = (thingItem:IThingTileItem):string => {
+/**
+ * Return the item value component. 
+ * This can be a switch or plain text.
+ */
+const getThingPropValue = (thingItem:IThingTileItem):VNode => {
   if (!thingItem || !thingItem.cThing) {
-    return "n/a"
+    return h("span", "n/a")
   }
-  let propName  = thingItem.tileItem.propertyID
-  let [valueStr] = thingItem.cThing.getPropertyValueText(propName)
-  return valueStr
+  let propName  = thingItem.tileItem.propertyName
+
+  switch(thingItem.tileItem.propertyName) {
+  case PropNameSwitch: 
+  case PropNameOnOffSwitch: 
+  case PropNameRelay: 
+  {
+    let value = thingItem.propIO?.asBoolean()
+    // toggle is enabled if it has action  
+    let hasAction = thingItem.cThing.td.actions[propName]
+    return h(QToggle, {
+      modelValue: value, 
+      disable: !hasAction, 
+      onClick: (value, evt)=>{
+        console.log("Trigger toggle action")
+        $q.notify({type:'positive', message: "Requested toggle of "+propName })
+        thingItem.cThing?.invokeAction(propName, !value)
+      },
+      // onUpdate doesn't work in spite of documentation that mentions it
+      // onUpdate: (value, evt)=>{
+      //   console.log("Trigger update")
+      // }
+      })
+    break
+  }
+  default:
+    let value = thingItem.propIO? thingItem.propIO.asText() : "n/a"
+    return h('span', value)
+  }
 }
 
 /**
@@ -177,7 +216,7 @@ const getTileItemTooltip = (thingItem:IThingTileItem, now:DateTime):VNode => {
               { style: 'font-size:inherit' },
                 ()=>h(PropValueInfoPopup, {
                   cThing: thingItem.cThing, 
-                  propName:thingItem.tileItem.propertyID
+                  propName:thingItem.tileItem.propertyName
                   }),
   )
   return comp
@@ -220,10 +259,10 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
           onClick: ()=>handleRemove(row),
         }),
     }, {
-      // Show property name. TODO: use label field
+      // Show property name. 
       title: "Property Name", 
-      field: "tdProp.title", 
-      width: "60%",
+      field: "affordance.title", 
+      // width: "50%",
       component: (row:IThingTileItem)=>h('span',
          {'style': 'width:"100%"'},
          [getTileItemLabel(row),
@@ -232,11 +271,16 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
       ),
       align: 'left'
     }, {
+      // what type, temperature, humidity? 
+      title: "type",
+      field: "tileItem.propertyName",
+      hidden: props.noTypeCol
+    }, {
       // show value and unit
       title: "Value", 
-      field: "tdProp.value",
+      field: "propIO.value",
       // width: "50%",
-      // maxWidth: "0",
+      width: "120px",
       component: (row:IThingTileItem)=>h('span', {}, 
         [getThingPropValue(row),
          getTileItemTooltip(row, DateTime.now())

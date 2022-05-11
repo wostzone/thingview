@@ -35,23 +35,11 @@ export const DeviceTypeWeatherService = "weatherService" // Node is a service pr
 export const DeviceTypeWeatherStation = "weatherStation" // Node is a weatherstation device
 export const DeviceTypeWeighScale = "weighScale"     // Node is an electronic weight scale
 
-// PropertyTypeActuator is an actuator (readonly, use Actions)
-export const PropertyTypeActuator = "wost:actuator"
-// PropertyTypeAttr is a readonly internal Thing attribute
-export const PropertyTypeAttr = "wost:attr"
-// PropertyTypeConfig is a writable configuration
-export const PropertyTypeConfig = "wost:configuration"
-// PropertyTypeSensor is a readonly sensor
-export const PropertyTypeSensor = "wost:sensor"
-// PropertyTypeState is a readonly internal state
-export const PropertyTypeState = "wost:state"
-// PropertyTypeInput is an input (use in Actions)
-export const PropertyTypeInput = "wost:input"
-// PropertyTypeOutput is an output (when different from sensor)
-export const PropertyTypeOutput = "wost:output"
-
 /**
  * WoST Vocabulary property names to be used by Things and plugins to build their TD
+ * Property names are standardized and identify the type of property described.
+ * If a device has multiple instances of a property with the same name then it becomes
+ * an object with nested properties for each instance.
  */
 export const PropNameAcceleration = "acceleration"
 export const PropNameAddress = "address" // device domain or ip address

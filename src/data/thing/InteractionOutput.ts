@@ -27,6 +27,25 @@ export default class InteractionOutput extends Object {
     }
   }
 
+  /** Return the value as text for presentation including the unit 
+   * This is a convenience function
+   */
+  asText(): string {
+    let valueStr = this.value + (this.schema?.unit ? " " + this.schema.unit : "")
+    return valueStr
+  }
+
+  /** Return the value as boolean for presentation 
+  * This is a convenience function
+  */
+  asBoolean(): boolean {
+    if (this.value == "0") {
+      return false
+    }
+    return !!this.value
+  }
+
+
   /** Update the value of the interaction output 
    */
   updateValue(value: any, updated?: DateTime) {

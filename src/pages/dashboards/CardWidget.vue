@@ -7,6 +7,7 @@ import { ref } from "vue";
 import TileItemsTable from "./TileItemsTable.vue";
 import { ThingFactory } from "@/data/protocolbinding/ThingFactory";
 import { DateTime } from "luxon";
+import { currentTime } from "@/data/timeAgo";
 
 const props= defineProps<{
   tile:DashboardTileConfig
@@ -41,8 +42,8 @@ const getThingPropValue = (item:IDashboardTileItem):string => {
     return "Missing value"
   }
   let cThing = props.thingFactory.consumeWithID(item.thingID)
-  let propIO = cThing?.properties.get(item.propertyID)
-  let tdProp = cThing?.td.properties[item.propertyID]
+  let propIO = cThing?.properties.get(item.propertyName)
+  let tdProp = cThing?.td.properties[item.propertyName]
   if (!tdProp || !propIO) {
     // Thing info not available
     // return "Property '"+item.propertyID+"' not found"
@@ -60,7 +61,7 @@ const getPropAge = (item:IDashboardTileItem):string => {
     return "n/a"
   }
   let cThing = props.thingFactory.consumeWithID(item.thingID)
-  let propIO = cThing?.properties.get(item.propertyID)
+  let propIO = cThing?.properties.get(item.propertyName)
   if (!propIO) {
     // Thing info not available
     // return "Property '"+item.propertyID+"' not found"
@@ -71,23 +72,23 @@ const getPropAge = (item:IDashboardTileItem):string => {
 }
 
 /**
- * Lookup the property age fraction of 24 hours (0..1)
+ * Lookup the property age fraction of 12 hours (0..1)
+ * This is a computed function that uses 'currentTime' to periodically auto-update the age
+ * Intended to show an 'age bar'.
  */
 const getAgeFractionOfDay = (item:IDashboardTileItem):number => {
   if (!item ) {
     return 0
   }
   let cThing = props.thingFactory.consumeWithID(item.thingID)
-  let propIO = cThing?.properties.get(item.propertyID)
+  let propIO = cThing?.properties.get(item.propertyName)
   if (!propIO) {
     // Thing info not available
     // return "Property '"+item.propertyID+"' not found"
     return 0
   }
-  let valueStr = propIO.getUpdatedShortText()
-  let age = DateTime.now().diff(propIO.updated, 'seconds')
-  let ageFraction = age.seconds / (24*3600)
-  console.log("getAgeFractionOfDay. sec=%s fraction=%s", age.seconds, ageFraction)
+  let age = currentTime.value.diff(propIO.updated, 'seconds')
+  let ageFraction = age.seconds / (12*3600)
   return ageFraction
 }
 
@@ -104,15 +105,20 @@ const item0 = ref(props.tile?.items?.[0])
     <TileItemsTable
         :tileItems="props.tile?.items"
         :thingFactory="props.thingFactory"
+        :no-type-col="!props.tile?.showType"
         grow
         flat dense
         noBorder noHeader
     />
   </div>
   <div v-else-if="props.tile.items?.length==1"
-    class="card-widget single-item-card"
+    class="card-widget"
   >
-    <p class="card-value">
+    <p v-show="props.tile.showType" class="item-type">
+      {{item0.propertyName}}
+    </p>
+
+    <p class="card-value single-item-card">
       {{getThingPropValue(props.tile?.items[0])}}
     </p>
 
@@ -120,7 +126,7 @@ const item0 = ref(props.tile?.items?.[0])
     class="card-bottom" :value="getAgeFractionOfDay(item0)" >
       <div class="absolute-full flex flex-center">
         <q-badge color="white" text-color="teal" 
-        :label="getPropAge(props.tile?.items[0])" 
+        :label="getPropAge(item0)" 
         />
       </div>
     </q-linear-progress>
@@ -132,6 +138,11 @@ const item0 = ref(props.tile?.items?.[0])
 </template>
 
 <style scoped>
+.item-type {
+  margin-bottom: 0;
+  font-size: 0.9em;
+  font-style: italic; 
+}
 .card-value {
   flex-grow: 1;
   display:flex;

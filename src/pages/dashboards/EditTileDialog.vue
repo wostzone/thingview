@@ -6,7 +6,7 @@
 
 import {ref, reactive} from "vue";
 import {cloneDeep as _cloneDeep, remove as _remove} from 'lodash-es'
-import {useDialogPluginComponent, useQuasar, QForm, QInput, QSelect} from "quasar";
+import {useDialogPluginComponent, useQuasar, QCheckbox, QForm, QInput, QSelect} from "quasar";
 import {matAdd} from "@quasar/extras/material-icons";
 
 import TDialog from "@/components/TDialog.vue";
@@ -56,9 +56,11 @@ const handleAddThingProperty = () => {
     let propID=props.propID
     // Add a new view property to the tile
     console.log("EditTileDialog.handleAddTileProperty: props:", props)
-    editTile.items.push(
-      {thingID:thingID, 
-       propertyID:propID })
+    
+    editTile.items.push({thingID: thingID, propertyName: propID })
+    })
+    .onCancel(()=>{
+      console.log("EditTileDialog.handleAddTileProperty closing")
     })
 }
 
@@ -84,7 +86,7 @@ const handleEditTileItemLabel = (tileItem:IDashboardTileItem, defaultLabel:strin
 // Remove the tile item from the list of items
 const handleRemoveTileItem = (tileItem:IDashboardTileItem) => {
   console.info("EditTileDialog.handleRemoveTileItem. item=",tileItem)
-  _remove(editTile.items, (item) => (item.propertyID === tileItem.propertyID && (item.thingID === item.thingID)))
+  _remove(editTile.items, (item) => (item.propertyName === tileItem.propertyName && (item.thingID === item.thingID)))
 }
 
 // Submit the updated Tile
@@ -126,18 +128,27 @@ const handleSubmit = () =>{
               :rules="[()=>editTile.title !== ''||'Please provide a title']"
               stack-label
       />
-      <QSelect v-model="editTile.type"
-               map-options  emit-value
-               :options="[
-                  {label:'Card', value:TileTypeCard},
-                  {label:'Image', value:TileTypeImage}]"
-               :rules="[(val:any)=> 
-                    (!!val && (val.length > 0)) || 
-                        'please select a valid type: '+val
-                        ]"
+      <div class="row">
+        <QSelect label="Type of tile"
+            class="col" 
+            v-model="editTile.type"
+            map-options  emit-value
+            :options="[
+                    {label:'Card', value:TileTypeCard},
+                    {label:'Image', value:TileTypeImage}]"
+            :rules="[(val:any)=> 
+                      (!!val && (val.length > 0)) || 
+                          'please select a valid type: '+val
+                          ]"
 
-               label="Type of tile"
-      />
+            
+        />
+        <QCheckbox label="Show Type" 
+          class="col" 
+          v-model="editTile.showType"
+        >
+        </QCheckbox>
+      </div>
       <p>Properties 
         <TButton round flat 
                  :icon="matAdd" 
@@ -149,6 +160,7 @@ const handleSubmit = () =>{
         :tileItems="editTile.items"
         dense flat
         edit-mode
+        :noTypeCol="!editTile.showType"
         @onRemoveTileItem="handleRemoveTileItem"  
         @onEditTileItem="handleEditTileItemLabel"
         :thingFactory="thingFactory"

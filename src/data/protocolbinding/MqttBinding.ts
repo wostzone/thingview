@@ -24,7 +24,7 @@ export class MqttBinding {
   constructor(mqttClient: MqttClient, consumedThing: ConsumedThing) {
     this.mqttClient = mqttClient
     this.cThing = consumedThing
-    consumedThing.invokeActionHook = this.invokeAction
+    consumedThing.invokeActionHook = this.invokeAction.bind(this)
   }
 
   /** handle incoming event or property update message */

@@ -9,9 +9,9 @@ import { ISimpleTableColumn } from "@/components/TSimpleTable.vue";
 import TSimpleTable from "../../components/TSimpleTable.vue";
 import { ConsumedThing } from "@/data/thing/ConsumedThing";
 import InteractionOutput from "@/data/thing/InteractionOutput";
-import { timeAgo } from "@/data/timeAgo";
+import { isoAge } from "@/data/timeAgo";
 import { DateTime } from "luxon";
-import { h, ref } from "vue";
+import { h } from "vue";
 
 const props= defineProps<{
   cThing: ConsumedThing
@@ -26,12 +26,6 @@ interface IEventDisplayInfo {
    /** latest event value */
    io: InteractionOutput
 }
-
-// the current time will be updated every 30 seconds to refresh the display
-const currentTime = ref(DateTime.now())
-setInterval(()=>{
-  currentTime.value = DateTime.now()
-}, 30000)
 
 
 /** return a list of events to show, containing:
@@ -73,7 +67,7 @@ const eventColumns = <Array<ISimpleTableColumn>>[
   },
   {title:"Updated", field:"io.updated",
     component: (row:any)=>h('span', {}, 
-        { default: ()=>timeAgo(DateTime.fromISO(row.io.updated), currentTime.value)
+        { default: ()=>isoAge(row.io.updated)
         })
   }
 ]

@@ -2,7 +2,7 @@
 
 import { h, ref } from 'vue';
 import { DateTime } from 'luxon';
-import {timeAgo} from '@/data/timeAgo'
+import {isoTimeAgo, isoAge, currentTime} from '@/data/timeAgo'
 import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
 import TSimpleTable, { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
@@ -45,13 +45,6 @@ interface IProperyDisplayInfo {
    /** latest property value */
    io: InteractionOutput 
 }
-
-// the current time will be updated every 30 seconds to refresh the display
-const currentTime = ref(DateTime.now())
-setInterval(()=>{
-  currentTime.value = DateTime.now()
-}, 30000)
-
 
 /**
  * Select property 
@@ -112,8 +105,11 @@ const propertyItemColumns:ISimpleTableColumn[] = [
       }, 
       {default: ()=>row.pa.title}
     ),
-  },
-  {
+  // }, {
+  //     // what type, temperature, humidity? 
+  //     title: "type",
+  //     field: "name"  
+  }, {
     title: "Value", 
     // maxWidth: "0",
     // width: "50%",
@@ -132,7 +128,8 @@ const propertyItemColumns:ISimpleTableColumn[] = [
   // },
   {title:"Updated", field:"io.updated",
     component: (row:any)=>h('span', {}, 
-        { default: ()=>timeAgo(DateTime.fromISO(row.io.updated), currentTime.value)
+        // { default: ()=>isoTimeAgo(row.io.updated, currentTime.value)
+        { default: ()=>isoAge(row.io.updated)
         })
   }
 ]

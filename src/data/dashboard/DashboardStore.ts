@@ -21,9 +21,10 @@ export interface IDashboardTileItem {
    */
   thingID: string
   /**
-   * name of the thing property to display
+   * name of the property to display
    */
-  propertyID: string,
+  //  propertyID: string,
+  propertyName: string,
 }
 
 /**
@@ -31,9 +32,14 @@ export interface IDashboardTileItem {
  */
 export class DashboardTileConfig extends Object {
   /**
-* ID of the tile to display. Used to match the layout id.
-*/
+  * ID of the tile to display. Used to match the layout id.
+  */
   id: string = nanoid(5);
+
+  /**
+   * Show the type of item, eg temperature, humidity, etc
+   */
+  showType: boolean = false;
 
   /**
    * Title of dashboard tile when displaying

@@ -8,8 +8,9 @@ import {matDashboard} from "@quasar/extras/material-icons";
 const  storageKey:string = "appState"
 
 
-// The global application state
+// The global reactive application state
 export class AppStateData extends Object {
+  // editMode for the dashboard
   editMode: boolean = false;
 }
 
