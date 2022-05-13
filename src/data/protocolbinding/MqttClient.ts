@@ -289,6 +289,17 @@ export class MqttClient {
       })
     }
   }
+  // publish a message on the mqtt bus
+  async publishAsync(topic: string, payload: string) {
+    if (this.mqttJS) {
+      this.mqttJS.publish(topic, payload, (err) => {
+        if (err) {
+          console.error("mqttjs-client:Publish Error", err)
+          throw (err)
+        }
+      })
+    }
+  }
 
   /** subscribe to a topic.
    * @param topic to subscribe to. Can include wildcards but must be unique

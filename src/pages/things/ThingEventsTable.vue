@@ -8,7 +8,7 @@ import {TDEventAffordance, ThingTD} from "@/data/thing/ThingTD";
 import { ISimpleTableColumn } from "@/components/TSimpleTable.vue";
 import TSimpleTable from "../../components/TSimpleTable.vue";
 import { ConsumedThing } from "@/data/thing/ConsumedThing";
-import InteractionOutput from "@/data/thing/InteractionOutput";
+import { InteractionOutput } from "@/data/thing/InteractionOutput";
 import { isoAge } from "@/data/timeAgo";
 import { DateTime } from "luxon";
 import { h } from "vue";
@@ -38,9 +38,11 @@ interface IEventDisplayInfo {
  */
 const eventsToShow = (cThing:ConsumedThing): Array<IEventDisplayInfo> => {
   let names = new Array<string>()
-  Object.entries(cThing.td.events).forEach(([name]) => {
-      names?.push(name)
-  })
+  if (cThing.td.events) {
+    Object.entries(cThing.td.events).forEach(([name]) => {
+        names?.push(name)
+    })
+  }
   
   let eventList = names.map((name:string)=>{
     let ea = cThing.td.events[name]

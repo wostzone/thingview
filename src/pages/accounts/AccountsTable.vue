@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 
-// Wrapper around the QTable for showing a list of accounts
-// QTable slots are available to the parent
+/** Wrapper around the QTable for showing a list of accounts
+  * QTable slots are available to the parent
+  */
 import {ref} from 'vue'
 import {AccountRecord} from "@/data/accounts/AccountStore";
 import {QBtn, QTooltip, QTable, QTd, QToggle} from "quasar";

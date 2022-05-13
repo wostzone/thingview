@@ -6,7 +6,7 @@ import { matRemove, matEdit } from '@quasar/extras/material-icons';
 import { useQuasar, QToggle, QTooltip } from 'quasar';
 
 import TButton from '@/components/TButton.vue'
-import TSimpleTable from '../../components/TSimpleTable.vue';
+import TSimpleTable from '@/components/TSimpleTable.vue';
 import PropValueInfoPopup from './PropValueInfoPopup.vue';
 
 import { IDashboardTileItem } from '@/data/dashboard/DashboardStore';
@@ -14,8 +14,7 @@ import { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
 import { PropNameName, PropNameOnOffSwitch, PropNameRelay, PropNameSwitch } from '@/data/thing/Vocabulary';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import { ThingFactory } from '@/data/protocolbinding/ThingFactory';
-import InteractionOutput from '@/data/thing/InteractionOutput';
-import { timeAgo } from '@/data/timeAgo';
+import {InteractionOutput} from '@/data/thing/InteractionOutput';
 import { DateTime } from 'luxon';
 import { TDPropertyAffordance } from '@/data/thing/ThingTD';
 
@@ -140,11 +139,12 @@ const getThingPropValue = (thingItem:IThingTileItem):VNode => {
   case PropNameOnOffSwitch: 
   case PropNameRelay: 
   {
-    let value = thingItem.propIO?.asBoolean()
+    let value = thingItem.propIO?.asBoolean
     // toggle is enabled if it has action  
     let hasAction = thingItem.cThing.td.actions[propName]
     return h(QToggle, {
       modelValue: value, 
+      label: value ? "On" : "Off",
       disable: !hasAction, 
       onClick: (value, evt)=>{
         console.log("Trigger toggle action")
@@ -159,7 +159,7 @@ const getThingPropValue = (thingItem:IThingTileItem):VNode => {
     break
   }
   default:
-    let value = thingItem.propIO? thingItem.propIO.asText() : "n/a"
+    let value = thingItem.propIO? thingItem.propIO.asText : "n/a"
     return h('span', value)
   }
 }

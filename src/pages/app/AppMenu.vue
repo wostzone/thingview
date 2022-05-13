@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 
+/**
+ * Application dropdown menu component
+ */
 import  {MenuAbout, MenuEditMode, MenuAddDashboard, MenuAccounts, MenuThings} from "@/pages/app/MenuConstants";
 
 import TMenuButton, {IMenuItem} from "@/components/TMenuButton.vue";

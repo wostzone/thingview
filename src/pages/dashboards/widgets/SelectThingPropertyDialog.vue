@@ -10,7 +10,7 @@ import { useDialogPluginComponent, QCard, QInput, QList, QExpansionItem } from '
 
 import TDialog from '@/components/TDialog.vue';
 import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
-import ThingPropertiesTable from '../things/ThingPropertiesTable.vue';
+import ThingPropertiesTable from '../../things/ThingPropertiesTable.vue';
 import { thingFactory } from '@/data/protocolbinding/ThingFactory';
 
 // inject handlers

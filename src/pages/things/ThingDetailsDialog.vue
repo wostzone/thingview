@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 
+/**
+ * 
+ */
 import TDialog from '@/components/TDialog.vue'
 import ThingDetailsView from './ThingDetailsView.vue'
 import {ThingTD} from "@/data/thing/ThingTD";

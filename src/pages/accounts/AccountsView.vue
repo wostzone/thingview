@@ -5,7 +5,6 @@ import {reactive} from "vue";
 import {useQuasar, QBtn, QCard, QCardSection, QIcon, QToolbar, QToolbarTitle} from "quasar";
 import {matAdd, matAssignmentInd} from "@quasar/extras/material-icons";
 
-import EditAccountDialog from "./EditAccountDialog.vue";
 import AccountsTable from './AccountsTable.vue'
 import {appState} from '@/data/AppState'
 import {accountStore, AccountRecord} from '@/data/accounts/AccountStore'

@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 
+/**
+ * Main application view and data initialization
+ */
 import {onMounted, nextTick, reactive} from 'vue';
 import {useQuasar} from "quasar";
 import AppHeader from "./AppHeader.vue";

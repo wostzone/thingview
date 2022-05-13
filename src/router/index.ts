@@ -1,3 +1,6 @@
+/**
+ * Router for dashboard and things views
+ */
 import {
   createWebHistory,
   createRouter,
@@ -6,13 +9,8 @@ import {
 } from "vue-router";
 
 import { h } from 'vue'
-// import AccountsView from '@/pages/accounts/AccountsView.vue'
 import DialogRouterView from './DialogRouterView.vue'
-// import { ThingTD } from "@/data/thing/ThingTD";
-// import thingStore from '@/data/thing/ThingStore'
 import { accountStore, AccountRecord } from "@/data/accounts/AccountStore";
-// import { ConsumedThing } from "@/data/thing/ConsumedThing";
-// import dashboardStore from "@/data/dashboard/DashboardStore";
 
 // Router constants shared between router and navigation components
 // Should this move to router?index.ts
@@ -32,44 +30,9 @@ const getAccount = (id:string): AccountRecord|undefined => {
   return account
 }
 
-// // Get the thing of the given ID or an empty TD if the ID is not found
-// const getConsumedThing = (id: string): ConsumedThing | undefined => {
-//   let td = thingStore.GetThingTDById(id)
-//   if (!td) {
-//     console.log("Router getTD id: ", id, 'is unknown.')
-//     return undefined
-//   }
-//   console.log("Router getTD id: ", id, 'found!')
-//   let cThing = thingStore.consume(td)
-//   return cThing
-// }
-// Get the first dashboard name
-// const getFirstDashboard = (): string => {
-//   if (dashboardStore.dashboards.length > 0) {
-//     return dashboardStore.dashboards[0].name
-//   } else {
-//     console.log("getFirstDashboard. No dashboards found")
-//     return "nodashboards"
-//   }
-// }
-
-// Return the dashboard for the current route
-// If no dashboard name is specified, return the first dashboard
-// const dashboardPropsFn = (route:any):any => {
-//   let dashboardName = route.params.dashboardName
-//   console.debug('dashboardPropsFn. Getting dashboard with name ', dashboardName)
-//   let dash = ds.GetDashboardByName(dashboardName)
-//   if (!dash) {
-//     // Dashboard not found.
-//     console.warn("dashboardPropsFn: dashboard %s not found. Redirecting to first valid dashboard", dashboardName)
-//   }
-//   return {
-//     dashboard: dash
-//   }
-// }
-
-// Router paths and components
-// Use dynamic components to reduce chunk size
+/** Router paths and components
+ * Use dynamic components to reduce chunk size
+ */
 const routes: Array<RouteRecordRaw> = [
   // List of accounts
   {

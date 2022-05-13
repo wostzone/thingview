@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 
+/**
+ * Application Tab Bar with dashboard pages
+ */
 import {QTabs, QRouteTab} from 'quasar'
 import { DashboardDefinition } from '@/data/dashboard/DashboardStore';
 import {DashboardPrefix} from '@/router'

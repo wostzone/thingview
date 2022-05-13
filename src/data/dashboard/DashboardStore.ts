@@ -16,14 +16,15 @@ export interface IDashboardTileItem {
    * Optional override of the property name
    */
   label?: string
+
   /**
    * ID of the thing whose property to display
    */
   thingID: string
+
   /**
-   * name of the property to display
+   * name of the property (or event) to display
    */
-  //  propertyID: string,
   propertyName: string,
 }
 
@@ -53,7 +54,7 @@ export class DashboardTileConfig extends Object {
   type: string = TileTypeCard  //
 
   /**
-   * Collection of Thing items to display, in order of appearance
+   * Collection of Thing properties to display, in order of appearance
    */
   items: IDashboardTileItem[] = []
 }

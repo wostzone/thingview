@@ -19,9 +19,9 @@ export default defineConfig({
   // enable for production source maps
   //   sourcemap:true,
   // },
-  // Disable HMR as debugging with HMR sourcemaps doesn't work :(
+  // Disable HMR when debugging as sourcemaps get out of sync :(
   server: {
-    hmr: false
+    // hmr: false
   },
   css: {
     // devSourcemap: true,

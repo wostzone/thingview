@@ -17,25 +17,28 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
 // 
 const props = defineProps<{
+  /**
+   * The dashboard tile item being edited
+   */
   tileItem: IDashboardTileItem
+  /**
+   * The default label 
+   */
   defaultLabel: string
 }>()
 
-
 const formRef = ref()
-
 
 // editLabel is a copy the original label being edited
 const editItem = reactive({
     label: props.tileItem.label
-});
-
+})
 
 const emits = defineEmits( [
   // REQUIRED; need to specify some events that your
   // component will emit through useDialogPluginComponent()
   ...useDialogPluginComponent.emits,
-]);
+])
 
 // Submit the updated tile item label
 const handleSubmit = () =>{
@@ -50,7 +53,7 @@ const handleSubmit = () =>{
           console.info("EditTileItemName.handleSubmit item label is not valid")
         }
       })
-};
+}
 
 </script>
 

@@ -1,7 +1,7 @@
 // A consumed thing hold Thing value and definition
 import { cloneDeep as _cloneDeep, extend as _extend } from 'lodash-es'
 import { TDActionAffordance, ThingTD } from "../thing/ThingTD";
-import InteractionOutput from "./InteractionOutput";
+import { InteractionOutput } from "./InteractionOutput";
 import { DateTime } from "luxon";
 
 
@@ -50,19 +50,34 @@ export class ConsumedThing {
   // prevent multiple read properties
   private _readInProgress = false
 
-  // Hook to invoke action via the protocol binding. 
-  // This can be set to a protocol binding by the protocol factory
-  // By default this throws an error
-  invokeActionHook = (name: string, params: any, actionAffordance: TDActionAffordance): void => { throw Error("Actions are not supported on this thing") }// = undefined
+  /** Hook to invoke action via the protocol binding.
+   * This can be set to a protocol binding by the protocol factory
+   * By default this throws an error
+   *
+   * @param cThing: the thing whose action to invoke
+   * @param name: name of the action to invoke
+   * @param params: the data of the action as defined in the action affordance schema
+   * @returns a promise that resolves when the request for action has been sent
+   */
+  invokeActionHook = async (cThing: ConsumedThing, name: string, params: any): Promise<void> => { throw Error("Actions are not supported on this thing") }// = undefined
 
-  // Hook to write properties by the protocol binding
-  // This can be set to a protocol binding by the protocol factory
-  // By default this throws an error
-  writePropertiesHook = (props: Map<string, any>, td: ThingTD) => { throw Error("Writing properties is not supported on this thing") }// = undefined
+  /** Hook to write properties via the protocol binding
+   * This can be set to a protocol binding by the protocol factory.
+   * By default this throws an error.
+   *
+   * @param cThing: the thing to write to
+   * @param props: holds the name-value pair where value is the text representation to write.
+   * @returns a promise that resolves when the request to write properties has been sent
+   */
+  writePropertiesHook = async (cThing: ConsumedThing, props: Object): Promise<void> => { throw Error("Writing properties is not supported on this thing") }// = undefined
 
-  // Hook to read thing property values by the protocol binding
-  // This can be set to a protocol binding by the protocol factory
-  // By default this throws an error
+  /** Hook to refresh the cashed property values via the protocol binding.
+   * This can be set to a protocol binding by the protocol factory
+   * By default this throws an error
+   * 
+   * @param cThing: the thing whose properties to refresh
+   * @returns a promise that resolves when the request to read properties has been sent
+   */
   readPropertiesHook = async (cThing: ConsumedThing): Promise<Object | undefined> => { throw Error("Reading properties is not supported on this thing") }// = undefined
 
   // Create an instance of a ConsumedThing and attach to the protocol binding
@@ -180,7 +195,7 @@ export class ConsumedThing {
       console.error(err)
       throw err
     }
-    return this.invokeActionHook(actionName, params, actionAffordance)
+    return this.invokeActionHook(this, actionName, params)
   }
 
   /** Get cached properties of the Thing
@@ -238,13 +253,13 @@ export class ConsumedThing {
    * error if fails.
    */
   async writeProperty(propName: string, value: any) {
-    let propMap = new Map<string, any>()
-    propMap.set(propName, value)
-    return this.WriteMultipleProperties(propMap)
+    let props = {}
+    props[propName] = value
+    return this.writeMultipleProperties(props)
   }
 
   /** WriteMultipleProperties writes multiple property values.
-   * Takes as arguments properties - as a map keys being Property names and values as Property values.
+   * Takes as arguments properties - an object containing property name-value pairs.
    * where values can be native values.
    * 
    * This does not update the property immediately. It is up to the exposedThing to perform necessary validation
@@ -257,8 +272,8 @@ export class ConsumedThing {
    * This returns a promise that completes once the request is submitted, or throws an 
    * error if fails.
    */
-  async WriteMultipleProperties(properties: Map<string, any>) {
-    return this.writePropertiesHook(properties, this.td)
+  async writeMultipleProperties(properties: Object) {
+    return this.writePropertiesHook(this, properties)
   }
 }
 

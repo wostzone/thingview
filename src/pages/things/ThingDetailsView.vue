@@ -1,19 +1,22 @@
 <script lang="ts" setup>
 
+/**
+ * View with detailed info about a 'Thing', including its properties,
+ * configuration, events and actions.
+ */
+
 import {ref} from 'vue'
-import { date, QCard, QCardSection, QField, QForm, QTab, QTabs, QTabPanel, QTabPanels } from 'quasar';
+import { date, QField, QForm, QTab, QTabs, QTabPanel, QTabPanels } from 'quasar';
 
 import {matSettings, matSettingsRemote, matDescription, matDirectionsRun} from '@quasar/extras/material-icons'
 
-
-import {ThingTD, TDPropertyAffordance, TDActionAffordance, TDEventAffordance} from '@/data/thing/ThingTD';
-
-import ThingEvents from './ThingEvents.vue'
-import ThingActions from "@/pages/things/ThingActions.vue";
-import ThingPropertiesTable from "@/pages/things/ThingPropertiesTable.vue";
-import ThingConfiguration from "@/pages/things/ThingConfiguration.vue";
+import {ThingTD} from '@/data/thing/ThingTD';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
-import ThingEventsTable from './ThingEventsTable.vue';
+
+import ThingEventsTable from './ThingEventsTable.vue'
+import ThingActionsTable from "./ThingActionsTable.vue";
+import ThingPropertiesTable from "./ThingPropertiesTable.vue";
+import ThingConfigurationTable from "./ThingConfigurationTable.vue";
 
 
 const {formatDate}= date
@@ -65,7 +68,7 @@ const getDateText = (iso:string): string => {
       </QTabPanel>
 
       <QTabPanel name="config" class="q-pa-xs">
-        <ThingConfiguration :cThing="props.cThing"/>
+        <ThingConfigurationTable :cThing="props.cThing"/>
       </QTabPanel>
 
       <QTabPanel name="events" class="q-pa-xs">
@@ -73,7 +76,7 @@ const getDateText = (iso:string): string => {
       </QTabPanel>
 
       <QTabPanel name="actions" class="q-pa-xs">
-        <ThingActions :cThing="props.cThing"/>
+        <ThingActionsTable :cThing="props.cThing"/>
       </QTabPanel>
 
     </QTabPanels>

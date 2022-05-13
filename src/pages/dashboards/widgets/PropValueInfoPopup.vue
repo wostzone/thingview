@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 
-// popup view displaying information about a property value
-import { QCard, QCardSection, QForm, QField, QSeparator } from 'quasar';
+/**
+ * Popup view displaying information about a property value
+ */
+import { QForm, QField, QSeparator } from 'quasar';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import { timeAgo } from '@/data/timeAgo';
 

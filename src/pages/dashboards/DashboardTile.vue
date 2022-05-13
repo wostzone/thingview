@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 
-import {h, Component, reactive} from "vue";
+import { ThingFactory } from "@/data/protocolbinding/ThingFactory";
 import {DashboardDefinition, DashboardStore, DashboardTileConfig, IDashboardTileItem} from "@/data/dashboard/DashboardStore";
 import {useQuasar, QCard, QCardSection, QBtn, QToolbar, QToolbarTitle} from "quasar";
-import CardWidget from './CardWidget.vue'
 import {matContentCopy, matContentPaste, matCopyAll, matDelete, matEdit, matMenu} from "@quasar/extras/material-icons";
 import TMenuButton, { IMenuItem } from "@/components/TMenuButton.vue";
 import EditTileDialog from "./EditTileDialog.vue";
-import { ThingFactory } from "@/data/protocolbinding/ThingFactory";
+import CardWidget from "./widgets/CardWidget.vue";
 
 const $q = useQuasar()
 
@@ -156,6 +155,7 @@ const handleMenuAction = (menuItem:IMenuItem) => {
           :tile="props.tile" 
           :editMode="props.editMode"
           :thingFactory="props.thingFactory"
+          @onEditTile="handleEditTile(props.tile)"
         />
       </QCardSection>
 

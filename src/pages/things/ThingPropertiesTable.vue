@@ -1,13 +1,18 @@
 <script lang="ts" setup>
 
-import { h, ref } from 'vue';
+import { h } from 'vue';
 import { DateTime } from 'luxon';
-import {isoTimeAgo, isoAge, currentTime} from '@/data/timeAgo'
-import { TDPropertyAffordance, ThingTD } from '@/data/thing/ThingTD';
+import { useQuasar, QBtn } from 'quasar';
+import { matEdit } from '@quasar/extras/material-icons';
+
+import { isoAge } from '@/data/timeAgo'
+import { TDPropertyAffordance } from '@/data/thing/ThingTD';
 import TSimpleTable, { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
-import InteractionOutput from '@/data/thing/InteractionOutput';
-// import {thingStore} from '@/data/thing/ThingStore'
+import {InteractionOutput} from '@/data/thing/InteractionOutput';
+import EditConfigDialog from '../dashboards/widgets/EditConfigDialog.vue';
+
+const $q = useQuasar()
 
 const props = defineProps<{
   /**
@@ -16,16 +21,24 @@ const props = defineProps<{
   cThing: ConsumedThing
 
   /**
+   * Enable selecting a property. This shows a pointer cursor on the property name
+   */
+  enablePropSelect?: boolean
+
+  /**
+   * Enable editing of writable (non reaadonly) properties
+   * Users must subscribe to onEditConfiguration(cThing,name,io) 
+   */
+  enableEditConfig?: boolean
+
+  /**
    * Names of properties to show or undefined to show all properties in the cThing
    */
   propNames?: string[]
 
   /**
-   * Enable selecting a property. This shows a pointer cursor on the property name
+   *  Text to show when table has nothing else to show 
    */
-  enablePropSelect?: boolean
-
-  /** Text to show when table has nothing else to show */
   noDataLabel?: string
 }>()
 
@@ -33,7 +46,9 @@ const props = defineProps<{
  * Optional event when enabled
  * @args: [TD, propertyName, propertyAffordance]
  */
-const emits = defineEmits(["onThingPropertySelect"])
+const emits = defineEmits([
+  "onThingPropertySelect",
+])
 
 
 /** Aggregate info for displaying a property */
@@ -44,6 +59,25 @@ interface IProperyDisplayInfo {
    pa: TDPropertyAffordance
    /** latest property value */
    io: InteractionOutput 
+}
+
+/**
+ * Writable properties are editable. Notify of the request to edit.
+ */
+const handleEditConfiguration = (propInfo:IProperyDisplayInfo) => {
+  console.log("ThingPropertiesTable.handleEditConfiguration: propertyName=", propInfo.name)
+  $q.dialog({
+     component: EditConfigDialog,
+     componentProps: {
+       propName: propInfo.name,
+       affordance: propInfo.pa,
+       currentValue: propInfo.io
+      },
+  }).onOk( (newValue:string)=>{
+    console.log("ThingPropertiesTable.handleEditConfiguration: props:", newValue)
+    props.cThing.writeProperty(propInfo.name, newValue)
+  })
+
 }
 
 /**
@@ -98,38 +132,38 @@ const propertyItemColumns:ISimpleTableColumn[] = [
     field: "pa.title",
     // maxWidth: "0",
     // width: "50%",
-    component: (row:any) => h('span', 
+    component: (row:IProperyDisplayInfo) => h('span', 
       { 
         style: (props.enablePropSelect ? 'cursor:pointer':''), 
         onClick: ()=>handleThingPropertySelect(row),
       }, 
       {default: ()=>row.pa.title}
     ),
-  // }, {
-  //     // what type, temperature, humidity? 
-  //     title: "type",
-  //     field: "name"  
   }, {
     title: "Value", 
     // maxWidth: "0",
     // width: "50%",
     field: "io.value",
-    component: (row:any)=>h('span', {}, 
-        { default: ()=>row.io.value }
+    component: (row:IProperyDisplayInfo)=>
+      h('span', {style:"display:flex"}, 
+        [ row.io.asText, 
+        // show edit button when not readonly
+        !row.io.schema?.readOnly ? 
+          h(QBtn, { flat:true, icon:matEdit, size:"md", padding:"none",
+              style: "position:absolute; right:5px;",
+              onClick: ()=>handleEditConfiguration(row)
+              }) : null
+        ]
       )
   },
-  // {title: "Type", field:"pa.type", align:"left",
-  //   // maxWidth: "0",
-  //   width: "80px", sortable:true
-  // },
   // {title: "Default", field:"pa.default", align:"left",
   //   width: "70px",
   //   // maxWidth: "70px",
   // },
   {title:"Updated", field:"io.updated",
-    component: (row:any)=>h('span', {}, 
+    component: (row:IProperyDisplayInfo)=>h('span', {}, 
         // { default: ()=>isoTimeAgo(row.io.updated, currentTime.value)
-        { default: ()=>isoAge(row.io.updated)
+        { default: ()=>isoAge(row.io.updated.toString())
         })
   }
 ]

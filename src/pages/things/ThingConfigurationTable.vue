@@ -1,5 +1,8 @@
 <script setup lang="ts">
 
+/**
+ * Table with configuration properties of a thing
+ */
 import { ConsumedThing } from "@/data/thing/ConsumedThing";
 import {ThingTD} from "@/data/thing/ThingTD";
 import ThingPropertiesTable from './ThingPropertiesTable.vue';

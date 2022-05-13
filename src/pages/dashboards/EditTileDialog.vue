@@ -13,9 +13,9 @@ import TDialog from "@/components/TDialog.vue";
 import TButton from "@/components/TButton.vue";
 
 import { DashboardTileConfig, IDashboardTileItem, TileTypeCard, TileTypeImage } from "@/data/dashboard/DashboardStore";
-import SelectThingPropertyDialog from "./SelectThingPropertyDialog.vue";
-import TileItemsTable from "./TileItemsTable.vue";
-import EditTileItemLabel from "./EditTileItemLabel.vue";
+import SelectThingPropertyDialog from "./widgets/SelectThingPropertyDialog.vue";
+import TileItemsTable from "./widgets/TileItemsTable.vue";
+import EditTileItemLabel from "./widgets/EditTileItemLabel.vue";
 import { thingFactory } from "@/data/protocolbinding/ThingFactory";
 
 const $q = useQuasar()

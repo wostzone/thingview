@@ -2,7 +2,7 @@ import { DateTime } from "luxon"
 import { TDDataSchema } from "./TDDataSchema"
 
 
-export default class InteractionOutput extends Object {
+export class InteractionOutput extends Object {
 
   /** Data schema output, eg the TD property affordance */
   schema: & TDDataSchema | undefined = undefined
@@ -30,7 +30,7 @@ export default class InteractionOutput extends Object {
   /** Return the value as text for presentation including the unit 
    * This is a convenience function
    */
-  asText(): string {
+  get asText(): string {
     let valueStr = this.value + (this.schema?.unit ? " " + this.schema.unit : "")
     return valueStr
   }
@@ -38,7 +38,7 @@ export default class InteractionOutput extends Object {
   /** Return the value as boolean for presentation 
   * This is a convenience function
   */
-  asBoolean(): boolean {
+  get asBoolean(): boolean {
     if (this.value == "0") {
       return false
     }

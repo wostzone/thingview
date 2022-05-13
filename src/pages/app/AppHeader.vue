@@ -1,10 +1,12 @@
-
 <script lang="ts" setup>
+
+/**
+ * Application Header component
+ */
 import {reactive} from "vue";
 
 import {useQuasar, QToggle} from 'quasar';
 import router from '@/router'
-import {matDashboard} from "@quasar/extras/material-icons";
 
 import {
   MenuAbout,

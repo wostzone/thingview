@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+
+/**
+ * Dialog to edit a dashboard's properties
+ */
 import {reactive} from "vue";
 import {useDialogPluginComponent, QDialog, QForm, QInput} from "quasar";
 
