@@ -3,7 +3,7 @@
 /**
  * Application dropdown menu component
  */
-import  {MenuAbout, MenuEditMode, MenuAddDashboard, MenuAccounts, MenuThings} from "@/pages/app/MenuConstants";
+import  {MenuAbout, MenuEditMode, MenuAddDashboard, MenuAccounts, MenuThings} from "@/views/app/MenuConstants";
 
 import TMenuButton, {IMenuItem} from "@/components/TMenuButton.vue";
 import {

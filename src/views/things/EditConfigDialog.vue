@@ -35,7 +35,7 @@ const formRef = ref()
 
 // editItem is a copy the original value being edited
 const editItem = reactive({
-    newValue: props.currentValue.asText
+    newValue: props.currentValue.value
 });
 
 const emits = defineEmits( [

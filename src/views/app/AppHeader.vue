@@ -21,8 +21,8 @@ import {DashboardPrefix, AccountsRouteName} from '@/router/index'
 
 import AppMenu from './AppMenu.vue';
 import AboutDialog from "./AppAboutDialog.vue";
-import EditDashboardDialog from "@/pages/dashboards/EditDashboardDialog.vue";
-import EditTileDialog from "@/pages/dashboards/EditTileDialog.vue"
+import EditDashboardDialog from "@/views/dashboards/EditDashboardDialog.vue";
+import EditTileDialog from "@/views/dashboards/EditTileDialog.vue"
 import AppPagesBar from "./AppPagesBar.vue";
 import TConnectionStatus from "@/components/TConnectionStatus.vue"
 import {IMenuItem} from "@/components/TMenuButton.vue";

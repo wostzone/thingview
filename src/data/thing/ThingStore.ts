@@ -89,7 +89,7 @@ export class ThingStore {
     // augment the properties, events with IDs
     if (td.properties) {
       for (let [key, val] of Object.entries(td.properties)) {
-        val.id = key
+        val.name = key
       }
     }
     if (td.actions) {

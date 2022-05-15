@@ -8,7 +8,6 @@ import {
   createWebHashHistory,
 } from "vue-router";
 
-import { h } from 'vue'
 import DialogRouterView from './DialogRouterView.vue'
 import { accountStore, AccountRecord } from "@/data/accounts/AccountStore";
 
@@ -39,23 +38,23 @@ const routes: Array<RouteRecordRaw> = [
     // name: AccountsRouteName,
     path: "/accounts",
     // use dynamic loading to reduce load waits
-    // component: () => import("@/pages/accounts/AccountsView.vue"),
+    // component: () => import("@/views/accounts/AccountsView.vue"),
     component: DialogRouterView,  // webstorm shows an error incorrectly
     children: [
       {
         // Display the list of saved accounts if no additional parameters are provided
         name: AccountsRouteName,
         path: '',
-        component: () => import("@/pages/accounts/AccountsView.vue"),
+        component: () => import("@/views/accounts/AccountsView.vue"),
       },
       {
         // Display the list of accounts as background and a dialog showing the account details
         name: 'accounts.dialog',
         path: ':accountID',
         components: {
-          default: () => import("@/pages/accounts/AccountsView.vue"),
+          default: () => import("@/views/accounts/AccountsView.vue"),
           // name 'dialog' matches the second router-view in EmptyRouterView
-          dialog: () => import("@/pages/accounts/EditAccountDialog.vue"),
+          dialog: () => import("@/views/accounts/EditAccountDialog.vue"),
         },
         props: {
           dialog: (route: any) => ({
@@ -78,16 +77,16 @@ const routes: Array<RouteRecordRaw> = [
           // Display the list of things if no additional parameters are provided
           name: ThingsRouteName,
           path: '',
-          component: () => import("@/pages/things/ThingsView.vue"),
+          component: () => import("@/views/things/ThingsView.vue"),
         },
         {
         // Display the list of things as background and a dialog showing the Thing details
         name: 'things.dialog',
         path: ':thingID',
         components: {
-          default: () => import("@/pages/things/ThingsView.vue"),
+          default: () => import("@/views/things/ThingsView.vue"),
           // name 'dialog' matches the second router-view in EmptyRouterView
-          dialog: () => import("@/pages/things/ThingDetailsDialog.vue"),
+          dialog: () => import("@/views/things/ThingDetailsDialog.vue"),
         },
         props: {
           dialog: (route:any) => ({
@@ -103,7 +102,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     name: DashboardRouteName,
     path: DashboardPrefix + "/:dashboardName",
-    component: () => import("@/pages/dashboards/DashboardView.vue"),
+    component: () => import("@/views/dashboards/DashboardView.vue"),
     props: true,
   },
   // this doesn't work if the dashboard haven't yet been loaded

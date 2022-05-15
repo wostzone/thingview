@@ -128,7 +128,7 @@ const propertiesToShow = (cThing:ConsumedThing, propNames?:string[]): Array<IPro
  */
 const propertyItemColumns:ISimpleTableColumn[] = [
   {
-    title: "Name", 
+    title: "Title", 
     field: "pa.title",
     // maxWidth: "0",
     // width: "50%",
@@ -138,6 +138,18 @@ const propertyItemColumns:ISimpleTableColumn[] = [
         onClick: ()=>handleThingPropertySelect(row),
       }, 
       {default: ()=>row.pa.title}
+    ),
+  }, {
+    title: "Property Name", 
+    field: "pa.name",
+    // maxWidth: "0",
+    // width: "50%",
+    component: (row:IProperyDisplayInfo) => h('span', 
+      { 
+        style: (props.enablePropSelect ? 'cursor:pointer':''), 
+        onClick: ()=>handleThingPropertySelect(row),
+      }, 
+      {default: ()=>row.name}
     ),
   }, {
     title: "Value", 
