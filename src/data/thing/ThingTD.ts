@@ -1,7 +1,6 @@
 // Definition of the Thing's TD, Thing Description document
 // This consists of the TD itself with properties
 
-import { TDDataSchema } from "./TDDataSchema"
 import { WoTDataType, WoTProperties, WoTRequired } from "./Vocabulary"
 
 // ThingIDParts describes the parts of how a Thing ID is constructed
@@ -19,6 +18,38 @@ class ThingIDParts {
   public deviceType: string = ""
 }
 
+export class TDDataSchema extends Object {
+  // Used to indicate input, output, attribute. See vocab.WoSTAtType
+  // public atType string = "" `json:"@type"` 
+
+  // Provides a default value of any type as per data schema
+  public default: string = ""
+
+  // Provides additional (human-readable) information based on a default language
+  public description: string = ""
+  // Provides additional nulti-language information
+  public descriptions: string[] | undefined = undefined
+
+  // Restricted set of values provided as an array.
+  //  for example: ["option1", "option2"]
+  public enum: string[] = []
+
+  // Boolean value to indicate whether a property interaction / value is read-only (=true) or not (=false)
+  // the value true implies read-only.
+  public readOnly: boolean = true
+
+  // Human readable title in the default language
+  public title: string = ""
+  // Human readable titles in additional languages
+  public titles: string[] | undefined = undefined
+
+  // Type provides JSON based data type,  one of WoTDataTypeNumber, ...object, array, string, integer, boolean or null
+  public type: string = ""
+
+  // See vocab UnitNameXyz for units in the WoST vocabulary
+  public unit: string | undefined = undefined
+
+}
 
 // Form describing supported protocol binding operations
 export class TDForm extends Object {
@@ -28,12 +59,10 @@ export class TDForm extends Object {
 }
 
 export class TDInteractionAffordance extends Object {
-  // id uniquely identifies the affordance, be it event name, action name, etc
-  // intended for display affordance instances in a table 
-  id: string = ""
-
-  // Used to indicate input, output, attribute. See vocab.WoSTAtType
-  public atType: string = ""
+  // Unique name of the affordance, eg: property, event or action name
+  // While not part of the official specification, it allows passing the affordance
+  // without having to separately pass a name.
+  name: string = ""
 
   // Provides additional (human-readable) information based on a default language
   public description: string = ""
@@ -54,13 +83,22 @@ export class TDInteractionAffordance extends Object {
 /** Thing Description Action Affordance
  */
 export class TDActionAffordance extends TDInteractionAffordance {
+  /**
+   * Input data for the action when applicable
+   */
+  public input?: TDDataSchema = new TDDataSchema()
 
-  // action input parameters
-  public inputs = new Map<string, {
-    WoTDataType?: string,
-    WoTProperties?: Map<string, string>,
-    WoTRequired?: boolean,
-  }>()
+  /**
+   * Action is idempotent, eg repeated calls have the same result
+   */
+  public idempotent: boolean = false
+
+  // // action input parameters
+  // public inputs = new Map<string, {
+  //   WoTDataType?: string,
+  //   WoTProperties?: Map<string, string>,
+  //   WoTRequired?: boolean,
+  // }>()
 }
 
 /** Thing Description Event Affordance
@@ -71,13 +109,19 @@ export class TDEventAffordance extends TDInteractionAffordance {
 }
 
 /** Thing Description property affordance
+ * The specification says this is an interaction affordance that is also a data schema?
+ * JS doesn't support multiple inheritance so we'll use a dataschema and add the missing
+ * 'forms' field from the interaction affordance. 
  */
 export class TDPropertyAffordance extends TDDataSchema {
-  // property id is assigned the property name to be able to use in an array for presentation
-  id: string = ""
+
+  // property name is assigned the property name to be able to use in an array for presentation
+  name: string = ""
 
   // Form hypermedia controls to describe how an operation can be performed
   // Forms are serializations of Protocol Bindings.
+  // In WoST properties do not have individual protocol bindings for their operations
+  // so this is empty (why is it mandatory?)
   public forms: TDForm[] = []
 
   // Optional nested properties. Map with PropertyAffordance

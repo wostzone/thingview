@@ -1,6 +1,8 @@
 export const TOPIC_TYPE_EVENT = "event"
 export const TOPIC_SUBJECT_PROPERTIES = "properties"
 
+// export const TOPIC_ACTION = "local/things/{thingID}/action/{propName}"
+
 export const TOPIC_TYPE_TD = "td"
 export const SUB_TDS_TOPIC = "+/things/+/td"
 

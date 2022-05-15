@@ -73,7 +73,8 @@ export class ThingStore {
 
 
   // Update/replace a new discovered ThingTD in the collection
-  // This will do some cleanup on the TD to ensure the ID's are in place
+  // This will do some cleanup on the TD to ensure that properties, actions, and events
+  // include their own name.
   update(td: ThingTD): void {
     let existing = this._tdMap.get(td.id)
 
@@ -93,12 +94,12 @@ export class ThingStore {
     }
     if (td.actions) {
       for (let [key, val] of Object.entries(td.actions)) {
-        val.id = key
+        val.name = key
       }
     }
     if (td.events) {
       for (let [key, val] of Object.entries(td.events)) {
-        val.id = key
+        val.name = key
       }
     }
   }

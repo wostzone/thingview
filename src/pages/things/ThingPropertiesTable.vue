@@ -10,7 +10,7 @@ import { TDPropertyAffordance } from '@/data/thing/ThingTD';
 import TSimpleTable, { ISimpleTableColumn } from '@/components/TSimpleTable.vue';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import {InteractionOutput} from '@/data/thing/InteractionOutput';
-import EditConfigDialog from '../dashboards/widgets/EditConfigDialog.vue';
+import EditConfigDialog from './EditConfigDialog.vue';
 
 const $q = useQuasar()
 

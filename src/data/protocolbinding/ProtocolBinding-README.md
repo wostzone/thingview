@@ -21,19 +21,17 @@ Multiple Forms with the same operation but different protocols can be included t
 
 Some of the challenges that the approach brings are:
 
-1. The security of devices will vary greatly. Which devices are secure and which ones are easily hacked?
+1. For each interaction (property, event, action) consumers must traverse the hierarchy to determine the form to be used that defines the operation.
 
-2. For each interaction (property, event, action) consumers must traverse the hierarchy to determine the form to be used that defines the operation.
+2. When multiple protocols are defined for the same operation, a decision for which protocol to use must be made.
 
-3. When multiple protocols are defined for the same operation, a decision for which protocol to use must be made.
+3. A connection must be established to the endpoint before the operation can take place. Connections must be pooled for acceptable performance. For HTTP this is less of an issue (apart from certificate/trust/auth) but for protocols like mqtt these connections must be managed separately.
 
-4. A connection must be established to the endpoint before the operation can take place. Connections must be pooled for acceptable performance. For HTTP this is less of an issue (apart from certificate/trust/auth) but for protocols like mqtt these connections must be managed separately.
+4. The credentials to establish a connection must be known before a connection can be established. How to determine which credentials are to be used? How to know which certificates to trust?
 
-5. The credentials to establish a connection must be known before a connection can be established. How to determine which credentials are to be used? How to know which certificates to trust?
+5. If credentials are not available, the operation should not be available to consumers. How to know this ahead of time?
 
-6. If credentials are not available, the operation should not be available to consumers. How to know this ahead of time?
-
-7. How to consumers manage access control if each device implements their own method?
+6. How to consumers manage access control if each device implements their own method?
 
 
 ### The WoST Hub Approach
@@ -69,7 +67,7 @@ Message bus addresses for the various operations are standardized. To avoid coll
 | op:subscribeevent       | Consumed Thing | SUB +/things/{thingID}/event/{eventName} |
 | op:subscribeallevents   | Consumed Thing | SUB +/things/{thingID}/event/+ |
 | op:invokeaction         | Consumed Thing | PUB local/things/{thingID}/action/{actionName} |
-| writemultipleproperties   | Consumed Thing | PUB local/things/{thingID}/write |
+| op:writemultipleproperty | Consumed Thing | PUB local/things/{thingID}/action/{propertyName} |
 | observemultipleproperties | Consumed Thing | SUB +/things/{thingID}/event/properties |
 
 
@@ -86,7 +84,7 @@ Not all WoT operations are applicable to WoST. Notably:
 | readproperty (1)         | property values are published through events |
 | readallproperties (1)    | property values are published through events |
 | readmultipleproperties(1)| property values are published through events |
-| writeproperty            | use writemultipleproperties instead |
+| writemultipleproperty    | use writeproperty instead |
 | writeallproperties       | use writemultipleproperties instead |
 | (un)observeproperty      | use observemultipleproperties |
 | (un)observeallproperties | use observemultipleproperties |

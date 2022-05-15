@@ -65,9 +65,9 @@ const eventsToShow = (cThing:ConsumedThing): Array<IEventDisplayInfo> => {
 const eventColumns = <Array<ISimpleTableColumn>>[
   {title: "Event", field:"name", align:"left",
     sortable:true},
-  {title: "Value", field:"io.value", align: "left"
+  {title: "Value", field:"io.asText", align: "left"
   },
-  {title:"Updated", field:"io.updated",
+  {title:"Updated", field:"io.updated", align: "left",
     component: (row:any)=>h('span', {}, 
         { default: ()=>isoAge(row.io.updated)
         })

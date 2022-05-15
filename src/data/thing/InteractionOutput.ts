@@ -1,6 +1,5 @@
 import { DateTime } from "luxon"
-import { TDDataSchema } from "./TDDataSchema"
-
+import { TDDataSchema } from "./ThingTD"
 
 export class InteractionOutput extends Object {
 

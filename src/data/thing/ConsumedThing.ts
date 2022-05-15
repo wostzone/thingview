@@ -69,7 +69,7 @@ export class ConsumedThing {
    * @param props: holds the name-value pair where value is the text representation to write.
    * @returns a promise that resolves when the request to write properties has been sent
    */
-  writePropertiesHook = async (cThing: ConsumedThing, props: Object): Promise<void> => { throw Error("Writing properties is not supported on this thing") }// = undefined
+  writePropertyHook = async (cThing: ConsumedThing, propName: string, propValue: any): Promise<void> => { throw Error("Writing properties is not supported on this thing") }// = undefined
 
   /** Hook to refresh the cashed property values via the protocol binding.
    * This can be set to a protocol binding by the protocol factory
@@ -188,6 +188,7 @@ export class ConsumedThing {
    * Returns a promise that completes when the action request has been sent.
    */
   async invokeAction(actionName: string, params: any) {
+    console.log("ConsumedThing.invokeAction: name=%s, params=%s", actionName, params)
     let actionAffordance = this.td.actions[actionName]
     if (!actionAffordance) {
       let err = new Error("can't invoke action '" + actionName +
@@ -255,7 +256,7 @@ export class ConsumedThing {
   async writeProperty(propName: string, value: any) {
     let props = {}
     props[propName] = value
-    return this.writeMultipleProperties(props)
+    return this.writePropertyHook(this, propName, value)
   }
 
   /** WriteMultipleProperties writes multiple property values.
@@ -273,7 +274,10 @@ export class ConsumedThing {
    * error if fails.
    */
   async writeMultipleProperties(properties: Object) {
-    return this.writePropertiesHook(this, properties)
+    for (let propName in Object.entries(properties)) {
+      let propValue = properties[propName]
+      return this.writePropertyHook(this, propName, propValue)
+    }
   }
 }
 

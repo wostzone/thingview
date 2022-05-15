@@ -27,7 +27,7 @@ export class MqttBinding {
     this.mqttClient = mqttClient
     this.cThing = consumedThing
     consumedThing.invokeActionHook = this.invokeAction.bind(this)
-    consumedThing.writePropertiesHook = this.writeProperties.bind(this)
+    consumedThing.writePropertyHook = this.writeProperty.bind(this)
   }
 
   /** handle incoming event or property update message */
@@ -53,18 +53,17 @@ export class MqttBinding {
     return this.mqttClient.publishAsync(topic, jsonPayload)
   }
 
-  /** writeProperties sends a requests to the ExposedThing to update property values.
+  /** writeProperty sends an action to the ExposedThing to update a property value.
    * This require the ExposedThing to be online.
-   * The props map holds the name-value pair where value is the text representation to write.
    * 
    * @param cThing: The consumed thing whose property to write
-   * @param props: object with name-value pairs to write
+   * @param propName: name of the property to write
+   * @param propValue: value of the property to write
    */
-  async writeProperties(cThing: ConsumedThing, props: Object) {
-    // async writeProperties(cThing: ConsumedThing, props: Map<string, any>) {
-    console.log("MqttBinding.writeProperties to Thing %s", this.cThing.id)
-    let topic = "things/" + this.cThing.id + "/write/properties"
-    let jsonPayload = JSON.stringify(props)
+  async writeProperty(cThing: ConsumedThing, propName: string, propValue: any) {
+    console.log("MqttBinding.writeProperty '%s' to Thing %s", propName, this.cThing.id)
+    let topic = "things/" + this.cThing.id + "/action/" + propName
+    let jsonPayload = JSON.stringify(propValue)
     return this.mqttClient.publish(topic, jsonPayload)
   }
 
