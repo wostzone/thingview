@@ -24,7 +24,7 @@ export class AccountRecord extends Object {
    */
   authPort?: number = 0; // 8881;
 
-  /** port of mqtt service. typically 8885 for websocket. 0 to use the express server proxy instead.
+  /** port of mqtt service. typically 8885 for websocket.
    */
   mqttPort?: number = 0; // 8885;
 

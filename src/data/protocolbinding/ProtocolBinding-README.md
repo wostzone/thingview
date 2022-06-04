@@ -94,16 +94,3 @@ Not all WoT operations are applicable to WoST. Notably:
 
 * (1) Reading of properties is done via the Directory Service using the values endpoint. Updates to property values are received as events via the message bus. The motivation is to reduce the load on devices and other consumers that would occur if each consumer asks to read all properties of all devices after it connects. This can lead to a multiplication DOS attack by an a bad actor.
 
-
-
-## Bridging Hubs
-
-In order to bridge multiple Hubs to create a mesh network of Hubs with each its own Things, Things from different Hubs must be identifyable and addressable.
-
-The topic therefore includes a zone ID. Local things are always published with the local prefix. A bridge replaces the local zone with zone of the bridge. 
-
-> A local publication of a TD: local/things/thingID1/td
-
-> A publication of a TD from zone 1: zone1/things/thingID2/td
-
-

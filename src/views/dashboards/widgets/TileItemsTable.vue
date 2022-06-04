@@ -49,7 +49,7 @@ const props = defineProps<{
    */
   noHeader?: boolean
   /**
-   * Hide the type column
+   * Hide the data type column
    */
   noTypeCol?: boolean
   /**
@@ -134,7 +134,7 @@ const getThingPropValue = (thingItem:IThingTileItem):VNode => {
   }
   let propName  = thingItem.tileItem.propertyName
 
-  switch(thingItem.tileItem.propertyName) {
+  switch(thingItem.tileItem.propertyName.toLowerCase()) {
   case PropNameSwitch: 
   case PropNameOnOffSwitch: 
   case PropNameRelay: 
@@ -271,10 +271,14 @@ const getColumns = (editMode:boolean|undefined):ISimpleTableColumn[] => {
       ),
       align: 'left'
     }, {
-      // what type, temperature, humidity? 
+      // data type
       title: "type",
-      field: "tileItem.propertyName",
-      hidden: props.noTypeCol
+      field: "tileItem.propIO?.schema?.type",
+      hidden: props.noTypeCol,
+      component: (row:IThingTileItem)=>h('span',
+         {'style': 'width:"100%"'},
+         [row.propIO?.schema?.type]
+      ),
     }, {
       // show value and unit
       title: "Value", 

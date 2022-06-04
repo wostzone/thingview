@@ -12,6 +12,7 @@ import { InteractionOutput } from "@/data/thing/InteractionOutput";
 import { isoAge } from "@/data/timeAgo";
 import { DateTime } from "luxon";
 import { h } from "vue";
+import TAge from "@/components/TAge.vue";
 
 const props= defineProps<{
   cThing: ConsumedThing
@@ -67,10 +68,13 @@ const eventColumns = <Array<ISimpleTableColumn>>[
     sortable:true},
   {title: "Value", field:"io.asText", align: "left"
   },
+  {title: "Type", field:"io.schema.type", align: "left"
+  },
   {title:"Updated", field:"io.updated", align: "left",
-    component: (row:any)=>h('span', {}, 
-        { default: ()=>isoAge(row.io.updated)
-        })
+    component: (row:IEventDisplayInfo)=>h(TAge,
+     {timeStamp:row.io.updated, showTooltip:true} )
+        // [ isoAge(row.io.updated),
+        // ])
   }
 ]
 

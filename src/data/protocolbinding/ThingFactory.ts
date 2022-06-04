@@ -230,7 +230,8 @@ export class ThingFactory {
 
   /** Obtain a 'Consumed Thing' for interacting with a remote (exposed) thing.
    * 
-   * This looks-up the TD from the factory store. If it doesn't exist this returns undefined.
+   * This looks-up the TD from the factory store. If it doesn't exist a dummy TD will be used 
+   * that will be updated when a TD is received.
    * 
    * This creates an instance of a consumed thing and attaches it to interaction protocol bindings:
    * - mqtt binding to subscribe and request updates
@@ -240,10 +241,10 @@ export class ThingFactory {
    * 
    * @param thingID is the ID of the TD
    */
-  consumeWithID(thingID: string): ConsumedThing | undefined {
+  consumeWithID(thingID: string): ConsumedThing {
     let td = this._thingStore.getThingTDById(thingID)
     if (!td) {
-      return undefined
+      td = this._thingStore.addTD(new ThingTD({ id: thingID }))
     }
     // doesn't exist so one needs to be created from the TD
     return this.consume(td)
@@ -262,11 +263,19 @@ export class ThingFactory {
    * @param td is the Thing TD whose interaction instance to create
    */
   consume(td: ThingTD): ConsumedThing {
+    if (!td || !td.id) {
+      throw new Error("Call to consume without a valid TD")
+    }
     let ct = this._ctMap.get(td.id)
     if (ct) {
-      // if a read failed last time then retry
+      // if reading properties failed last time, then retry
       if (!ct.hasProperties) {
+        // for some reason this causes an endless loop if reading fails
         ct.readAllProperties()
+          .then()
+          .catch((err: Error) => {
+            console.warn("consume readAllProperties failed. Continuing without.")
+          })
       }
       return ct
     }
@@ -288,6 +297,10 @@ export class ThingFactory {
           console.log("consume: Read property values for Thing: %s", cThing.id)
           return props
         })
+        .catch((err) => {
+          console.warn("Failed reading properties: ", err)
+          throw ("")
+        })
     }
 
 
@@ -298,7 +311,7 @@ export class ThingFactory {
       mqttBinding.subscribe()
     }
 
-    // load property values
+    // load property values when creating then the consumed thing
     // if authentication failed then reauthenticate and retry
     ct2.readAllProperties()
       .then()
@@ -310,7 +323,7 @@ export class ThingFactory {
               //   console.log("consume readAllProperties. retry succeeded")
               // })
               .catch(() => {
-                // console.error("consume readAllProperties. Retry failed")
+                console.error("consume readAllProperties. Retry failed")
               })
           })
           // ignore errors

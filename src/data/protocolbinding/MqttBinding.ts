@@ -40,7 +40,12 @@ export class MqttBinding {
         this.cThing.handlePropertyChange(propName, value)
       }
     } else {
-      this.cThing.handleEvent(eventName, params)
+      if (this.cThing.events.has(eventName)) {
+        this.cThing.handleEvent(eventName, params)
+      }
+      if (this.cThing.properties.has(eventName)) {
+        this.cThing.handlePropertyChange(eventName, params)
+      }
     }
   }
 

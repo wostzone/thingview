@@ -5,6 +5,7 @@ import { ThingStore } from "../thing/ThingStore"
 import { ConsumedThing } from '../thing/ConsumedThing'
 import { DateTime } from 'luxon'
 import { UnauthorizedError } from './errors'
+import { flatMap } from 'lodash-es'
 
 
 const DefaultServiceName = "thingdir"
@@ -33,7 +34,9 @@ const StatusNew = "new"
 
 // Client for connecting to a Hub Directory Service and query TDs
 export class DirectoryClient {
-  private _hostPort: string = ""
+  // private _hostPort: string = ""
+  private _address: string = ""
+  private _port: number = DefaultPort
   private _caCert: string = "" // in PEM format
   private _thingStore: ThingStore
   // private tlsClient: TLSSocket|null = null
@@ -46,7 +49,9 @@ export class DirectoryClient {
     if (!port) {
       port = DefaultPort
     }
-    this._hostPort = address + ":" + port.toString()
+    this._address = address
+    this._port = port
+    // this._hostPort = address + ":" + port.toString()
     this._thingStore = thingStore
   }
 
@@ -112,7 +117,11 @@ export class DirectoryClient {
     if (limit <= 0) {
       limit = DefaultLimit
     }
-    let url = "https://" + this._hostPort + PATH_THINGS
+    if (this._address == "") {
+      throw ("DirectoryClient.listTDs. Missing server address")
+    }
+    // let url = "https://" + this._hostPort + PATH_THINGS
+    let url = "https://" + this._address + ":" + this._port + PATH_THINGS
     // axios.get(url, {httpsAgent})
     // let options = {
     //     hostname: this.address,
@@ -170,7 +179,12 @@ export class DirectoryClient {
    * this returns a promise with object holding property values
    */
   async readProperties(cThing: ConsumedThing, accessToken: string):Promise<Object> {
-    let url = "https://" + this._hostPort + PATH_VALUES + "/" + cThing.id
+
+    if (this._address == "") {
+      throw ("DirectoryClient.readProperties. Missing server address")
+    }
+
+    let url = "https://" + this._address + ":" + this._port + PATH_VALUES + "/" + cThing.id
     console.log("DirectoryClient.readProperties: from '%s'", url)
 
     return this.getBatch(url, 0, MaxLimit, accessToken)

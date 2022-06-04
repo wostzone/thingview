@@ -22,8 +22,9 @@ export class ThingStore {
 
 
   // Add or replace a new discovered thing to the collection
-  addTD(td: ThingTD): void {
+  addTD(td: ThingTD): ThingTD {
     this.update(td)
+    return td
   }
 
   // Return all TD's that have been discovered 
@@ -78,27 +79,34 @@ export class ThingStore {
   update(td: ThingTD): void {
     let existing = this._tdMap.get(td.id)
 
-    if (!existing) {
+    if (existing) {
+      // update existing TD
+      _extend(existing, td)
+    } else {
       // This is a new TD
       let newTD = _cloneDeep(td)
       this._tdMap.set(newTD.id, newTD)
-    } else {
-      // update existing TD
-      _extend(existing, td)
     }
-    // augment the properties, events with IDs
-    if (td.properties) {
-      for (let [key, val] of Object.entries(td.properties)) {
+    // Retrieve the reactive instance which is a copy of the original.
+    // Satisfy the compiler. It doesn't know that tdMap was just set 
+    let td2 = this._tdMap.get(td.id)
+    if (!td2) {
+      return
+    }
+
+    // Augment the properties, events with their names for ease of use
+    if (td2.properties) {
+      for (let [key, val] of Object.entries(td2.properties)) {
         val.name = key
       }
     }
-    if (td.actions) {
-      for (let [key, val] of Object.entries(td.actions)) {
+    if (td2.actions) {
+      for (let [key, val] of Object.entries(td2.actions)) {
         val.name = key
       }
     }
-    if (td.events) {
-      for (let [key, val] of Object.entries(td.events)) {
+    if (td2.events) {
+      for (let [key, val] of Object.entries(td2.events)) {
         val.name = key
       }
     }

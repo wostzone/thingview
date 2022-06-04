@@ -60,8 +60,6 @@ const columns: Array<ISimpleTableColumn> = [
   },
   {title: "Description", field:"description" , align:"left",// width:"50%",
   },
-  {title: "@Type", field:"@type", align:"left", 
-  },
   {title: "Created", field:"created", align:"left", 
     component: (row: ThingTD) => h('span',{}, getDateText(row.created)),
   },

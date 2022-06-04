@@ -11,6 +11,7 @@ import TSimpleTable, { ISimpleTableColumn } from '@/components/TSimpleTable.vue'
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import {InteractionOutput} from '@/data/thing/InteractionOutput';
 import EditConfigDialog from './EditConfigDialog.vue';
+import TAge from '@/components/TAge.vue';
 
 const $q = useQuasar()
 
@@ -52,7 +53,7 @@ const emits = defineEmits([
 
 
 /** Aggregate info for displaying a property */
-interface IProperyDisplayInfo {
+interface IPropertyDisplayInfo {
    /** name of property to show */
    name: string
    /** The property affordance, eg schema of the property */
@@ -64,7 +65,7 @@ interface IProperyDisplayInfo {
 /**
  * Writable properties are editable. Notify of the request to edit.
  */
-const handleEditConfiguration = (propInfo:IProperyDisplayInfo) => {
+const handleEditConfiguration = (propInfo:IPropertyDisplayInfo) => {
   console.log("ThingPropertiesTable.handleEditConfiguration: propertyName=", propInfo.name)
   $q.dialog({
      component: EditConfigDialog,
@@ -83,7 +84,7 @@ const handleEditConfiguration = (propInfo:IProperyDisplayInfo) => {
 /**
  * Select property 
  */
-const handleThingPropertySelect = (propInfo:IProperyDisplayInfo)=>{
+const handleThingPropertySelect = (propInfo:IPropertyDisplayInfo)=>{
   console.log("ThingPropertiesTable.handleThingPropertySelect, \
       thingID=%s, propID=%s, thingProperty", props.cThing.id, propInfo.name)
   
@@ -99,7 +100,7 @@ const handleThingPropertySelect = (propInfo:IProperyDisplayInfo)=>{
  * @param cThing consumed thing whose properties to show
  * @param propNames with names of properties to show, or undefined to show all
  */
-const propertiesToShow = (cThing:ConsumedThing, propNames?:string[]): Array<IProperyDisplayInfo> => {
+const propertiesToShow = (cThing:ConsumedThing, propNames?:string[]): Array<IPropertyDisplayInfo> => {
   // let names = new Array<string>() 
   if (!propNames) {
     propNames = new Array<string>()
@@ -132,7 +133,7 @@ const propertyItemColumns:ISimpleTableColumn[] = [
     field: "pa.title",
     // maxWidth: "0",
     // width: "50%",
-    component: (row:IProperyDisplayInfo) => h('span', 
+    component: (row:IPropertyDisplayInfo) => h('span', 
       { 
         style: (props.enablePropSelect ? 'cursor:pointer':''), 
         onClick: ()=>handleThingPropertySelect(row),
@@ -142,9 +143,10 @@ const propertyItemColumns:ISimpleTableColumn[] = [
   }, {
     title: "Property Name", 
     field: "pa.name",
+    hidden: true,
     // maxWidth: "0",
     // width: "50%",
-    component: (row:IProperyDisplayInfo) => h('span', 
+    component: (row:IPropertyDisplayInfo) => h('span', 
       { 
         style: (props.enablePropSelect ? 'cursor:pointer':''), 
         onClick: ()=>handleThingPropertySelect(row),
@@ -156,7 +158,7 @@ const propertyItemColumns:ISimpleTableColumn[] = [
     // maxWidth: "0",
     // width: "50%",
     field: "io.value",
-    component: (row:IProperyDisplayInfo)=>
+    component: (row:IPropertyDisplayInfo)=>
       h('span', {style:"display:flex"}, 
         [ row.io.asText, 
         // show edit button when not readonly
@@ -167,16 +169,19 @@ const propertyItemColumns:ISimpleTableColumn[] = [
               }) : null
         ]
       )
-  },
-  // {title: "Default", field:"pa.default", align:"left",
-  //   width: "70px",
-  //   // maxWidth: "70px",
-  // },
-  {title:"Updated", field:"io.updated",
-    component: (row:IProperyDisplayInfo)=>h('span', {}, 
-        // { default: ()=>isoTimeAgo(row.io.updated, currentTime.value)
-        { default: ()=>isoAge(row.io.updated.toString())
-        })
+  }, {
+    title: "Type", 
+    field: "io.schema.type",
+    width: "100px",
+  }, {
+    title:"Updated", field:"io.updated",
+    component: (row:IPropertyDisplayInfo)=>h(TAge,
+     {timeStamp:row.io.updated, showTooltip:true} )
+
+    // component: (row:IProperyDisplayInfo)=>h('span', {}, 
+    //     // { default: ()=>isoTimeAgo(row.io.updated, currentTime.value)
+    //     { default: ()=>isoAge(row.io.updated.toString())
+    //     })
   }
 ]
 

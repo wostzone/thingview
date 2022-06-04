@@ -33,6 +33,7 @@ app.use(express.static(publicPath));
 // proxy auth requests to the auth service on this host
 app.use('/auth', createProxyMiddleware({ target: authURL, changeOrigin: true, secure:false }));
 app.use('/things', createProxyMiddleware({ target: dirURL, changeOrigin: true, secure:false }));
+app.use('/values', createProxyMiddleware({ target: dirURL, changeOrigin: true, secure:false }));
 app.use('/mqtt', createProxyMiddleware({ 
   target: mqttURL, 
   changeOrigin: true, 

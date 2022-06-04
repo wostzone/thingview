@@ -9,14 +9,22 @@ class Subscription {
   type: "property" | "event" | "null"
   // event or property name
   name: string
+  // subscription handler 
+  listener: (name: string, io: InteractionOutput) => void
   // form associated with the subscription 
   // TBD
   // The ConsumedThing associated with the subscription
   thing: ConsumedThing
 
-  constructor(type: "property" | "event", name: string, thing: ConsumedThing) {
+  // Create a subscription instance for a property or event notification
+  constructor(type: "property" | "event",
+    name: string,
+    thing: & ConsumedThing,
+    listener: (name: string, io: InteractionOutput) => void) {
+
     this.type = type
     this.name = name
+    this.listener = listener
     this.thing = thing
   }
 }
@@ -40,6 +48,9 @@ export class ConsumedThing {
 
   // flag whether the thing has been loaded with property values
   private _hasProperties: boolean
+
+  // internal slot for subscriptions by property name
+  private activeObservations: Map<string, Subscription>
 
   // propertyMap holds received property values
   private propertyMap: Map<string, InteractionOutput>
@@ -87,16 +98,24 @@ export class ConsumedThing {
     this.id = td.id
     this.td = td
     this._hasProperties = false
-    this.eventSubscriptions = new Map<string, Subscription>()
-    // event store with most recent event values
     this.eventMap = new Map<string, InteractionOutput>()
-    // property store with most recent property values
+    this.eventSubscriptions = new Map<string, Subscription>()
     this.propertyMap = new Map<string, InteractionOutput>()
+    this.activeObservations = new Map<string, Subscription>()
 
-    // ensure all properties exist
+    // ensure all events have an interaction output
+    for (const eventName in td.events) {
+      let eventAffordance = td.events[eventName]
+      let io = new InteractionOutput(
+        "n/a", DateTime.invalid("value not set"), eventAffordance.data)
+      this.eventMap.set(eventName, io)
+    }
+
+    // ensure all properties have an interaction output
     for (const propName in td.properties) {
       let propertyAffordance = td.properties[propName]
-      let io = new InteractionOutput("n/a", DateTime.invalid("value not set"), propertyAffordance)
+      let io = new InteractionOutput(
+        "n/a", DateTime.invalid("value not set"), propertyAffordance)
       this.propertyMap.set(propName, io)
     }
   }
@@ -137,6 +156,8 @@ export class ConsumedThing {
   // }
 
   /** handleEvent handles an event received by the protocol binding
+   * This updates the cached event value and notifies the event subscriber, if any.
+   *  
    * @param eventName name of the event 
    * @param eventValue the JSON decoded value provided with the event
    * @param updated the timestamp of the event or undefined for 'now'
@@ -145,23 +166,22 @@ export class ConsumedThing {
     // TODO: schema validation
     let io = this.eventMap.get(eventName)
     if (!io) {
-      let eventAffordance = this.td.events[eventName]
-      io = new InteractionOutput(eventValue, updated, eventAffordance.data)
-      this.eventMap.set(eventName, io)
+      // not a known event
+      return
     }
     io.updateValue(eventValue, updated)
 
     // last, notify subscriber
     let subscription = this.eventSubscriptions.get(eventName)
     if (subscription) {
-      // subscription.listener(eventName, eventValue, this)
+      subscription.listener(eventName, io)
     }
   }
 
 
   /** handlePropertyChange handles a change to property value as received by
    * the protocol binding. 
-   * This updates the cached property value and notifies subscribers.
+   * This updates the cached property value and notifies the property observer, if any.
    * 
    * @param propName name of the property 
    * @param propValue the JSON decoded new value of the property
@@ -171,11 +191,16 @@ export class ConsumedThing {
     // TODO: schema validation
     let io = this.propertyMap.get(propName)
     if (!io) {
-      let propertyAffordance = this.td.properties[propName]
-      io = new InteractionOutput(propValue, updated, propertyAffordance)
-      this.propertyMap.set(propName, io)
+      // not a known property or event
+      return
     }
     io.updateValue(propValue, updated)
+
+    // last, notify observer
+    let subscription = this.activeObservations.get(propName)
+    if (subscription) {
+      subscription.listener(propName, io)
+    }
   }
 
   /** invokeAction makes a request for invoking an Action and returns once the
@@ -199,7 +224,27 @@ export class ConsumedThing {
     return this.invokeActionHook(this, actionName, params)
   }
 
-  /** Get cached properties of the Thing
+  // ObserveProperty makes a request for Property value change notifications.
+  // Takes as arguments propertyName and a handler.
+  //
+  // returns an error if an active observation already exists
+  observeProperty(propName: string, listener: (propName: string, data: InteractionOutput) => void) {
+    // Only a single subscriber is allowed
+    let subscription = this.activeObservations.get(propName)
+    if (subscription) {
+      console.error("A property subscription for '%s' already exists", propName)
+      return new Error("NotAllowed")
+    }
+    if (!listener) {
+      console.error("Null listener")
+      return new TypeError("listener is null")
+    }
+
+    subscription = new Subscription("property", propName, this, listener)
+    this.activeObservations.set(propName, subscription)
+  }
+
+  /** Get cached property values of the Thing
    */
   get properties(): Map<string, InteractionOutput> {
     return this.propertyMap
@@ -215,22 +260,28 @@ export class ConsumedThing {
     if (this._readInProgress) {
       return
     }
+    console.warn("Consumed thing '%s' has no properties, reading again", this.id)
     this._readInProgress = true
     return this.readPropertiesHook(this)
       .then((propMap: Object | undefined) => {
+        this._hasProperties = true
         if (propMap) {
           Object.entries(propMap).forEach(([propName, val]) => {
             let updated = DateTime.fromISO(val.updated)
             this.handlePropertyChange(propName, val.value, updated)
+            // some properties can also have an event associated with them
+            if (this.eventMap.has(propName)) {
+              this.handleEvent(propName, val.value, updated)
+            }
           })
-          this._hasProperties = true
         }
-        this._readInProgress = false
       })
       .catch((err: Error) => {
         console.warn("readAllProperties. Failed: %s", err.message)
+        // throw (err)
+      })
+      .finally(() => {
         this._readInProgress = false
-        throw (err)
       })
   }
 

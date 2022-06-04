@@ -15,7 +15,7 @@ export class InteractionOutput extends Object {
   /** The last updated timestamp of the value */
   updated: DateTime = DateTime.now()
 
-  /** Create a new interaction output with value and timestamp 
+  /** Create a new interaction output with value and update timestamp
    */
   constructor(value: any, updated?: DateTime, schema?: TDDataSchema) {
     super()
@@ -23,7 +23,7 @@ export class InteractionOutput extends Object {
     this.value = value
     if (updated) {
       this.updated = updated
-    }
+    } 
   }
 
   /** Return the value as text for presentation including the unit 
@@ -38,8 +38,11 @@ export class InteractionOutput extends Object {
   * This is a convenience function
   */
   get asBoolean(): boolean {
-    if (this.value == "0") {
+    if (this.value == "0" || this.value == "false") {
       return false
+    }
+    else if (this.value == "1" || this.value == "true") {
+      return true
     }
     return !!this.value
   }
@@ -60,7 +63,7 @@ export class InteractionOutput extends Object {
    */
   getUpdatedShortText(): string {
     // https://stackoverflow.com/questions/2388115/get-locale-short-date-format-using-javascript
-    let shortText = this.updated.toLocaleString({
+    let shortText = this.updated?.toLocaleString({
       weekday: "short",
       day: "numeric",
       month: "short",

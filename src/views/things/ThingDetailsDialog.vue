@@ -10,6 +10,7 @@ import {useRouter} from "vue-router";
 // import { ConsumedThing } from '@/data/thing/ConsumedThing';
 import { thingFactory} from '@/data/protocolbinding/ThingFactory';
 import { ConsumedThing } from '@/data/thing/ConsumedThing';
+import { ref } from 'vue';
 
 /**
  * View ThingTD details dialog
@@ -25,23 +26,17 @@ const props = defineProps<{
 // const emit = defineEmits(["onClosed"])
 
 const router = useRouter()
+
 const handleClosed = (ev:any) => {
   if (props.returnTo) {
     router.push(props.returnTo)
   }
 }
 
-const getCThing = (thingID: string): ConsumedThing => {
-  let cThing = thingFactory.consumeWithID(thingID)
-  if (!cThing) {
-    console.log("Router getCThing id: ", thingID, 'is unknown. Using dummy')
-    return thingFactory.consume(new ThingTD({id:thingID}))
-  }
-  return cThing
-}
+const cThing = thingFactory.consumeWithID(props.thingID)
 
 // Get the thing of the given ID or an empty TD if the ID is not found
-const getHeight = (td: ThingTD|undefined):string => {
+const getHeight = (td: ThingTD | undefined): string => {
   if (!td) {
     return "100px"
   }
@@ -50,7 +45,7 @@ const getHeight = (td: ThingTD|undefined):string => {
   let attrCount = ThingTD.GetAttributeNames(td).length
   let configCount = ThingTD.GetConfigurationNames(td).length
   // row height is approx 29px + estimated header and footer size around 300px
-  let height = Math.max(attrCount, configCount)*29+340;
+  let height = Math.max(attrCount, configCount) * 29 + 340;
   return height.toString() + 'px'
 }
 
@@ -58,17 +53,11 @@ const getHeight = (td: ThingTD|undefined):string => {
 
 <template>
 
-<TDialog :visible="true"
-        :title="getCThing(props.thingID).td.description"
-        @onClosed="handleClosed"
-        showClose
-        :height="getHeight(getCThing(props.thingID).td)"
-         minHeight="40%"
-         minWidth="600px"
-        >
+  <TDialog :visible="true" :title="cThing.td.description" @onClosed="handleClosed" showClose
+    :height="getHeight(cThing.td)" minHeight="40%" minWidth="600px">
 
-  <ThingDetailsView v-if="props.thingID" :cThing="getCThing(props.thingID)"/>
+    <ThingDetailsView v-if="props.thingID" :cThing="cThing" />
 
-</TDialog>
+  </TDialog>
 
 </template>
